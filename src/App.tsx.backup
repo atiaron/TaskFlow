@@ -2,13 +2,13 @@ import React, { useState, useEffect } from 'react';
 import { ThemeProvider, createTheme } from '@mui/material/styles';
 import { CssBaseline, Container, CircularProgress, Box, Typography } from '@mui/material';
 import { User } from './types';
-import { AuthService } from './services/AuthService.ts';
-import LoginScreen from './components/LoginScreen.tsx';
-import MainNavigation from './components/MainNavigation.tsx';
-import TaskList from './components/TaskList.tsx';
-import ChatInterface from './components/ChatInterface.tsx';
-import CalendarView from './components/CalendarView.tsx';
-import JokeGenerator from './components/JokeGenerator.tsx';
+import { AuthService } from './services/AuthService';
+import LoginScreen from './components/LoginScreen';
+import MainNavigation from './components/MainNavigation';
+import TaskList from './components/TaskList';
+import ChatInterface from './components/ChatInterface';
+import CalendarView from './components/CalendarView';
+import JokeGenerator from './components/JokeGenerator';
 
 const theme = createTheme({
   direction: 'rtl',

@@ -62,3 +62,26 @@ export interface AIResponse {
   data?: any;
   actions?: AIAction[];
 }
+
+// 🆕 Joke API interfaces
+export interface Joke {
+  id: number;
+  type: string;
+  setup: string;
+  punchline: string;
+}
+
+export interface JokeApiResponse {
+  error?: boolean;
+  message?: string;
+  setup?: string;
+  punchline?: string;
+  id?: number;
+  type?: string;
+}
+
+export interface JokeState {
+  joke: Joke | null;
+  loading: boolean;
+  error: string | null;
+}
