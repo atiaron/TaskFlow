@@ -1,0 +1,19 @@
+services:
+  - type: web
+    name: taskflow-backend
+    env: node
+    plan: free
+    buildCommand: npm install
+    startCommand: npm start
+    healthCheckPath: /health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: CLAUDE_API_KEY
+        sync: false  # סוד - יוגדר בdashboard
+      - key: FRONTEND_URL
+        value: https://taskflow-atiaron.vercel.app
+    autoDeploy: true
+    repo: https://github.com/atiaron/taskflow-backend
+    branch: main
+    rootDir: server

@@ -1,0 +1,29 @@
+{
+  "version": 2,
+  "name": "taskflow-atiaron",
+  "builds": [
+    {
+      "src": "package.json",
+      "use": "@vercel/static-build",
+      "config": {
+        "distDir": "build"
+      }
+    }
+  ],
+  "routes": [
+    {
+      "src": "/static/(.*)",
+      "headers": {
+        "cache-control": "public, max-age=31536000, immutable"
+      }
+    },
+    {
+      "src": "/(.*)",
+      "dest": "/index.html"
+    }
+  ],
+  "env": {
+    "REACT_APP_VERSION": "2.0.0",
+    "REACT_APP_ENVIRONMENT": "production"
+  }
+}
