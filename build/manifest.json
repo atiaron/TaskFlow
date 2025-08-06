@@ -1,7 +1,7 @@
 {
   "name": "TaskFlow - העוזר החכם שלך",
   "short_name": "TaskFlow",
-  "description": "מערכת ניהול משימות חכמת עם בינה מלאכותית",
+  "description": "מערכת ניהול משימות חכמת עם בינה מלאכותית - ניהול חכם, תכנון מותאם אישית, וסנכרון בין מכשירים",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#1976d2",
@@ -10,39 +10,74 @@
   "scope": "/",
   "lang": "he",
   "dir": "rtl",
+  "categories": ["productivity", "business", "utilities"],
+  "iarc_rating_id": "",
+  "screenshots": [
+    {
+      "src": "/icons/screenshot-mobile.png",
+      "sizes": "360x640",
+      "type": "image/png",
+      "form_factor": "narrow",
+      "label": "TaskFlow Mobile Interface"
+    },
+    {
+      "src": "/icons/screenshot-desktop.png", 
+      "sizes": "1280x720",
+      "type": "image/png",
+      "form_factor": "wide",
+      "label": "TaskFlow Desktop Interface"
+    }
+  ],
   "icons": [
     {
-      "src": "/icons/favicon-16x16.png",
-      "sizes": "16x16",
+      "src": "/icons/icon-72x72.png",
+      "sizes": "72x72",
       "type": "image/png",
       "purpose": "any maskable"
     },
     {
-      "src": "/icons/favicon-32x32.png",
-      "sizes": "32x32",
+      "src": "/icons/icon-96x96.png",
+      "sizes": "96x96", 
       "type": "image/png",
       "purpose": "any maskable"
     },
     {
-      "src": "/icons/apple-touch-icon.png",
-      "sizes": "180x180",
+      "src": "/icons/icon-128x128.png",
+      "sizes": "128x128",
+      "type": "image/png", 
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icons/icon-144x144.png",
+      "sizes": "144x144",
       "type": "image/png",
       "purpose": "any maskable"
     },
     {
-      "src": "/icons/android-chrome-192x192.png",
+      "src": "/icons/icon-152x152.png",
+      "sizes": "152x152",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icons/icon-192x192.png",
       "sizes": "192x192",
       "type": "image/png",
       "purpose": "any maskable"
     },
     {
-      "src": "/icons/android-chrome-512x512.png",
+      "src": "/icons/icon-384x384.png",
+      "sizes": "384x384",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icons/icon-512x512.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any maskable"
     }
   ],
-  "categories": ["productivity", "business"],
   "shortcuts": [
     {
       "name": "צ'אט חדש",
@@ -51,38 +86,24 @@
       "url": "/?action=new-chat",
       "icons": [
         {
-          "src": "/icons/android-chrome-192x192.png",
-          "sizes": "192x192"
+          "src": "/icons/chat-shortcut.png",
+          "sizes": "96x96"
         }
       ]
     },
     {
-      "name": "משימות",
-      "short_name": "משימות",
-      "description": "הצג את רשימת המשימות",
+      "name": "משימות שלי",
+      "short_name": "משימות", 
+      "description": "הצג את רשימת המשימות שלי",
       "url": "/?tab=tasks",
       "icons": [
         {
-          "src": "/icons/android-chrome-192x192.png",
-          "sizes": "192x192"
+          "src": "/icons/tasks-shortcut.png",
+          "sizes": "96x96"
         }
       ]
     }
   ],
-  "screenshots": [
-    {
-      "src": "/icons/screenshot-wide.png",
-      "sizes": "1280x720",
-      "type": "image/png",
-      "form_factor": "wide",
-      "label": "TaskFlow Desktop View"
-    },
-    {
-      "src": "/icons/screenshot-narrow.png",
-      "sizes": "360x640",
-      "type": "image/png",
-      "form_factor": "narrow",
-      "label": "TaskFlow Mobile View"
-    }
-  ]
+  "related_applications": [],
+  "prefer_related_applications": false
 }

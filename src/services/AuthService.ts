@@ -83,13 +83,62 @@ export class AuthService {
       // Save user data
       const taskflowUser: User = {
         id: user.id,
-        name: user.name,
         email: user.email,
-        picture: user.picture,
+        display_name: user.name || user.email,
+        avatar_url: user.picture,
+        created_at: new Date(),
+        last_active: new Date(),
+        plan: 'free',
         settings: {
           theme: 'light',
           language: 'he',
-          notifications: true
+          timezone: 'Asia/Jerusalem',
+          notifications_enabled: true,
+          email_notifications: true,
+          push_notifications: true,
+          ai_suggestions_enabled: true,
+          auto_task_creation: false,
+          confirmation_threshold: 75,
+          privacy_mode: false,
+          sensitive_data_encryption: true,
+          cost_alerts: true,
+          optimization_mode: false
+        },
+        preferences: {
+          preferred_categories: ['personal', 'work'],
+          default_priority: 'medium',
+          default_duration: 30,
+          work_hours: {
+            start: '09:00',
+            end: '17:00',
+            days: [1, 2, 3, 4, 5]
+          },
+          break_reminders: true,
+          focus_mode_duration: 25
+        },
+        usage_stats: {
+          messages_this_month: 0,
+          tasks_created_this_month: 0,
+          tasks_completed_this_month: 0,
+          claude_api_calls: 0,
+          estimated_monthly_cost: 0,
+          actual_monthly_cost: 0,
+          cost_breakdown: {
+            claude_api: 0,
+            firebase_storage: 0,
+            firebase_operations: 0,
+            other_services: 0,
+            total: 0
+          },
+          completion_rate: 0,
+          average_task_duration: 0,
+          most_active_hours: [],
+          streak_days: 0,
+          most_used_features: [],
+          ai_satisfaction_rating: 4,
+          average_response_time: 0,
+          error_rate: 0,
+          uptime_percentage: 100
         }
       };
 

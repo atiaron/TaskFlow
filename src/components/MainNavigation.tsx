@@ -84,7 +84,7 @@ const MainNavigation: React.FC<MainNavigationProps> = ({ currentTab, onTabChange
           value="profile"
           icon={
             <Avatar 
-              src={user.picture} 
+              src={user.avatar_url} 
               sx={{ 
                 width: 28, 
                 height: 28,
