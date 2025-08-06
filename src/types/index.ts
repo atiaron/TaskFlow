@@ -717,6 +717,12 @@ export interface ReasoningStep {
   metadata?: any;
 }
 
+// AI Service Types
+export interface AIContext {
+  currentTasks: Task[];
+  currentTime: Date;
+}
+
 export type UserWithDetails = User & {
   recent_activity: any[];
   connected_integrations: any[];
