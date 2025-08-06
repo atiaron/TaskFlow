@@ -27,7 +27,7 @@
     "type-check": "npx tsc --noEmit",
     "type-check-watch": "npx tsc --noEmit --watch",
     "build-check": "npm run type-check && npm run build",
-    "deploy-ready": "npm run type-check && npm run build"
+    "deploy-ready": "npm run type-check && npm run build && npm run test --watchAll=false"
   },
   "eslintConfig": {
     "extends": [
