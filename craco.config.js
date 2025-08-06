@@ -7,12 +7,6 @@ module.exports = {
         include: paths.appSrc,
         use: [
           {
-            loader: 'thread-loader',
-            options: {
-              workers: require('os').cpus().length - 1
-            }
-          },
-          {
             loader: 'esbuild-loader',
             options: {
               loader: 'tsx',
