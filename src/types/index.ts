@@ -708,6 +708,14 @@ export type ChatWithMessages = Chat & {
   unread_count?: number;
 };
 
+// Reasoning Display Types
+export interface ReasoningStep {
+  type: string;
+  content: string;
+  timestamp?: Date;
+  metadata?: any;
+}
+
 export type UserWithDetails = User & {
   recent_activity: any[];
   connected_integrations: any[];
