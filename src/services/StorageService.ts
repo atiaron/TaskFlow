@@ -22,12 +22,12 @@ export class StorageService {
   }
 
   static async createTask(task: Omit<Task, 'id'>): Promise<Task> {
-    if (!task.user_id) {
+    if (!task.userId) {
       throw new Error('User ID is required in task');
     }
     
-    const taskId = await FirebaseService.addTask(task.user_id, task);
-    const createdTask = await FirebaseService.getTask(taskId, task.user_id);
+    const taskId = await FirebaseService.addTask(task.userId, task);
+    const createdTask = await FirebaseService.getTask(taskId, task.userId);
     
     if (!createdTask) {
       throw new Error('Failed to retrieve created task');
@@ -58,12 +58,12 @@ export class StorageService {
   }
 
   static async updateTaskById(taskId: string, updates: Partial<Task>): Promise<Task> {
-    if (!updates.user_id) {
+    if (!updates.userId) {
       throw new Error('User ID is required in updates');
     }
     
-    await FirebaseService.updateTask(updates.user_id, taskId, updates);
-    const updatedTask = await FirebaseService.getTask(taskId, updates.user_id);
+    await FirebaseService.updateTask(updates.userId, taskId, updates);
+    const updatedTask = await FirebaseService.getTask(taskId, updates.userId);
     
     if (!updatedTask) {
       throw new Error('Failed to retrieve updated task');

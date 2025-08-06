@@ -102,7 +102,7 @@ export class TaskManagementTool implements Tool {
       throw new Error('מזהה המשימה נדרש לעדכון');
     }
 
-    const updates: Partial<Task> = { user_id: context.userId };
+    const updates: Partial<Task> = { userId: context.userId };
     if (params.title) updates.title = params.title;
     if (params.description !== undefined) updates.description = params.description;
     if (params.priority) updates.priority = params.priority;

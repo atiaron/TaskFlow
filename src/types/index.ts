@@ -102,37 +102,21 @@ export interface TaskSuggestion {
 
 export interface Task {
   id: string;
-  user_id: string;
+  userId: string; // Changed from user_id to userId as per instructions
   title: string;
   description?: string;
-  completed: boolean;
+  status: TaskStatus;
   priority: TaskPriority;
-  category?: TaskCategory;
-  dueDate?: Date; // Updated for consistency
-  due_date?: Date; // Keep for backward compatibility
-  reminder_time?: Date;
-  createdAt: Date; // Updated for consistency
-  created_at: Date; // Keep for backward compatibility
-  updatedAt: Date; // Updated for consistency
-  updated_at: Date; // Keep for backward compatibility
-  created_by: TaskSource;
-  estimated_duration?: number; // minutes
-  estimatedTime?: number; // minutes - alias for estimated_duration
-  actual_duration?: number; // minutes
+  due_date?: Date;
+  created_at: Date;
+  updated_at: Date;
+  created_by_ai?: boolean;
+  category?: string;
   tags?: string[];
-  parent_id?: string; // for future sub-tasks
-  
-  // Sync & Conflict Resolution
-  version: number;
-  last_modified_by: string; // device_id
-  sync_status?: SyncStatus;
-  
-  // Future features
-  shared_with?: string[];
-  permissions?: Record<string, Permission>;
-  team_id?: string;
-  recurrence?: RecurrenceRule;
 }
+
+export type TaskStatus = 'pending' | 'in_progress' | 'completed' | 'cancelled';
+export type TaskPriority = 'low' | 'medium' | 'high' | 'urgent';
 
 export type TaskPriority = 'low' | 'medium' | 'high' | 'urgent';
 
@@ -208,16 +192,22 @@ export interface UserSettings {
 }
 
 export interface UserPreferences {
-  preferred_categories: TaskCategory[];
-  default_priority: TaskPriority;
-  default_duration: number; // minutes
-  work_hours: {
-    start: string; // HH:mm
-    end: string; // HH:mm
-    days: number[]; // 0-6
+  workingHours: {
+    start: string; // "09:00"
+    end: string;   // "17:00"
   };
-  break_reminders: boolean;
-  focus_mode_duration: number; // minutes
+  timezone: string; // "Asia/Jerusalem"
+  language: string; // "he"
+  priorityPreferences: {
+    autoHighPriority: string[]; // ["דחוף", "חשוב"]
+    defaultPriority: 'low' | 'medium' | 'high';
+    reminderDefaults: boolean;
+  };
+  notificationSettings: {
+    email: boolean;
+    push: boolean;
+    sms: boolean;
+  };
 }
 
 export interface UserProfile {
@@ -721,8 +711,10 @@ export interface ReasoningStep {
 // AI Service Types
 export interface AIContext {
   currentTasks: Task[];
-  currentTime: Date;
+  currentTime: string; // Changed from Date to string as per instructions
   userPreferences: UserPreferences;
+  conversationHistory?: Message[];
+  recentActivity?: string[];
 }
 
 // Enhanced AI Types
