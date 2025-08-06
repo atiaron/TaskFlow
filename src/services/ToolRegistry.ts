@@ -79,7 +79,7 @@ export class TaskManagementTool implements Tool {
       description: params.description || '',
       completed: false,
       priority: params.priority || 'medium',
-      dueDate: params.dueDate ? new Date(params.dueDate) : null,
+      dueDate: params.dueDate ? new Date(params.dueDate) : undefined,
       tags: params.tags || [],
       estimatedTime: params.estimatedTime || 30,
       createdAt: new Date(),
@@ -102,7 +102,7 @@ export class TaskManagementTool implements Tool {
       throw new Error('מזהה המשימה נדרש לעדכון');
     }
 
-    const updates: Partial<Task> = { userId: context.userId };
+    const updates: Partial<Task> = { user_id: context.userId };
     if (params.title) updates.title = params.title;
     if (params.description !== undefined) updates.description = params.description;
     if (params.priority) updates.priority = params.priority;

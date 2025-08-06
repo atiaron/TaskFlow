@@ -59,6 +59,7 @@ export type ChatSession = Chat & {
   messageCount: number;  // alias for message_count
   isStarred?: boolean;  // alias for is_starred (optional, like in Chat)
   userId: string;  // alias for user_id for session management (required)
+  context_summary: string;  // required by sessions.ts
 };
 
 // ChatMessage is an alias for Message - used for compatibility
@@ -722,6 +723,29 @@ export interface AIContext {
   currentTasks: Task[];
   currentTime: Date;
   userPreferences: UserPreferences;
+}
+
+// Enhanced AI Types
+export interface EnhancedAIResponse {
+  reply: string;
+  reasoning_steps?: ReasoningStep[];
+  suggested_tasks?: Partial<Task>[];
+  confidence: number;
+  toolResults?: ToolResult[];
+}
+
+export interface ToolResult {
+  tool: string;
+  success: boolean;
+  result: any;
+  error?: string;
+}
+
+// Memory Types
+export interface UserPreference {
+  key: string;
+  value: any;
+  timestamp: Date;
 }
 
 export type UserWithDetails = User & {
