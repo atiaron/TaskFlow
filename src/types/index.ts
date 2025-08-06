@@ -712,6 +712,7 @@ export type ChatWithMessages = Chat & {
 export interface ReasoningStep {
   type: string;
   content: string;
+  reasoning: string;
   timestamp?: Date;
   metadata?: any;
 }
