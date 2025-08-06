@@ -22,8 +22,8 @@ export const db = getFirestore(app);
 // Initialize Auth  
 export const auth = getAuth(app);
 
-// בדיקה אם אנחנו ב-development - נוכל להשתמש בemulator
-if (process.env.NODE_ENV === 'development' && !window.location.hostname.includes('firebase')) {
+// בדיקה אם אנחנו ב-development ובlocalhost - רק אז נשתמש בemulator
+if (process.env.NODE_ENV === 'development' && window.location.hostname === 'localhost') {
   try {
     // התחבר לFirestore Emulator
     connectFirestoreEmulator(db, 'localhost', 8081);
@@ -35,6 +35,8 @@ if (process.env.NODE_ENV === 'development' && !window.location.hostname.includes
   } catch (error) {
     console.log('⚠️ Emulators not available, using production Firebase');
   }
+} else {
+  console.log('🚀 Using production Firebase');
 }
 
 export default app;
