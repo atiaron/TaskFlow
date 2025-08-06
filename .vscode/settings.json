@@ -3,8 +3,5 @@
   "typescript.suggest.autoImports": true,
   "typescript.validate.enable": true,
   "editor.formatOnSave": true,
-  "typescript.format.enable": true,
-  "typescript.preferences.insertTypeNode": true,
-  "typescript.suggest.enabled": true,
-  "typescript.suggestionActions.enabled": true
+  "typescript.format.enable": true
 }

@@ -16,24 +16,40 @@
     "web-vitals": "^3.3.2"
   },
   "scripts": {
-    "start": "react-scripts start",
-    "build": "react-scripts build",
-    "build:production": "GENERATE_SOURCEMAP=false react-scripts build",
+    "start": "craco start",
+    "build": "node scripts/ultra-fast-build.js",
+    "build:clean": "rm -rf build .build-cache .webpack-cache && npm run build",
+    "build:super-fast": "cross-env GENERATE_SOURCEMAP=false DISABLE_ESLINT_PLUGIN=true TSC_COMPILE_ON_ERROR=true craco build",
+    "build:optimized": "node scripts/ram-ssd-optimizer.js && scripts/optimized-build.bat",
+    "build:with-cache": "npm run build:super-fast",
+    "type-check": "tsc --noEmit --skipLibCheck",
+    "type-check-parallel": "node scripts/parallel-type-check.js",
+    "type-check-async": "tsc --noEmit --skipLibCheck &",
+    "lint": "eslint src --ext .ts,.tsx --quiet",
+    "build:production": "npm run type-check-parallel && npm run build:super-fast",
+    "build:parallel": "cross-env NODE_OPTIONS='--max-old-space-size=8192' react-scripts build",
+    "build:turbo": "turbo build",
+    "dev": "craco start",
     "test": "react-scripts test",
     "eject": "react-scripts eject",
     "serve": "npx serve -s build -l 3000",
     "lighthouse": "npx lighthouse https://your-domain.vercel.app --output html --output-path ./lighthouse-report.html",
     "analyze": "npx source-map-explorer 'build/static/js/*.js'",
-    "type-check": "npx tsc --noEmit",
     "type-check-watch": "npx tsc --noEmit --watch",
     "build-check": "npm run type-check && npm run build",
-    "deploy-ready": "npm run type-check && npm run build && npm run test --watchAll=false"
+    "deploy-ready": "npm run type-check && npm run build && npm run test --watchAll=false",
+    "prepare": "husky"
   },
   "eslintConfig": {
     "extends": [
       "react-app",
       "react-app/jest"
     ]
+  },
+  "husky": {
+    "hooks": {
+      "pre-commit": "npm run type-check"
+    }
   },
   "browserslist": {
     "production": [
@@ -48,8 +64,14 @@
     ]
   },
   "devDependencies": {
+    "@craco/craco": "^7.1.0",
     "@types/react": "^18.2.15",
     "@types/react-dom": "^18.2.7",
-    "husky": "^9.1.7"
+    "cache-loader": "^4.1.0",
+    "cross-env": "^10.0.0",
+    "esbuild": "^0.25.8",
+    "esbuild-loader": "^4.3.0",
+    "husky": "^9.1.7",
+    "thread-loader": "^4.0.4"
   }
 }

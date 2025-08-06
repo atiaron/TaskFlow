@@ -2,45 +2,68 @@
 const path = require('path');
 
 module.exports = function override(config, env) {
-  config.resolve.symlinks = false;
-  config.resolve.cacheWithContext = false;
-  
+  // ✅ 1. השבת source maps בproduction (חוסך 60% זמן!)
+  if (env === 'production') {
+    config.devtool = false;
+  }
+
+  // ✅ 2. Cache אגרסיבי
   config.cache = {
     type: 'filesystem',
-    cacheDirectory: path.resolve(__dirname, 'node_modules/.cache/webpack'),
     buildDependencies: {
       config: [__filename]
     },
-    maxMemoryGenerations: 1
+    cacheDirectory: path.resolve(__dirname, '.webpack-cache')
   };
 
-  config.devtool = false;
-  
-  if (env === 'development') {
+  // ✅ 3. Parallel processing
+  config.parallelism = require('os').cpus().length;
+
+  // ✅ 4. מינימיזציה מקבילית
+  if (env === 'production') {
     config.optimization = {
       ...config.optimization,
-      removeAvailableModules: false,
-      removeEmptyChunks: false,
-      splitChunks: false,
-      usedExports: false,
-      sideEffects: false
+      minimize: true,
+      minimizer: [
+        ...config.optimization.minimizer,
+      ],
+      splitChunks: {
+        chunks: 'all',
+        cacheGroups: {
+          default: false,
+          vendors: false,
+          vendor: {
+            name: 'vendor',
+            chunks: 'all',
+            test: /node_modules/,
+            priority: 20
+          },
+          common: {
+            name: 'common',
+            minChunks: 2,
+            priority: 10,
+            reuseExistingChunk: true,
+            enforce: true
+          }
+        }
+      }
     };
-    
-    config.watchOptions = {
-      ignored: '**/node_modules/**',
-      aggregateTimeout: 100,
-      poll: false
-    };
-
-    config.plugins = config.plugins.filter(plugin => {
-      const name = plugin.constructor.name;
-      return !(
-        name === 'ForkTsCheckerWebpackPlugin' ||
-        name === 'ESLintWebpackPlugin' ||
-        name === 'ModuleScopePlugin'
-      );
-    });
   }
-  
+
+  // ✅ 5. Resolve optimization
+  config.resolve = {
+    ...config.resolve,
+    alias: {
+      '@': path.resolve(__dirname, 'src'),
+      'react': path.resolve('./node_modules/react'),
+      'react-dom': path.resolve('./node_modules/react-dom')
+    },
+    modules: [
+      path.resolve(__dirname, 'src'),
+      'node_modules'
+    ],
+    extensions: ['.js', '.jsx', '.ts', '.tsx', '.json']
+  };
+
   return config;
 };
