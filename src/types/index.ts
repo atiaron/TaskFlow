@@ -721,6 +721,7 @@ export interface ReasoningStep {
 export interface AIContext {
   currentTasks: Task[];
   currentTime: Date;
+  userPreferences: UserPreferences;
 }
 
 export type UserWithDetails = User & {
