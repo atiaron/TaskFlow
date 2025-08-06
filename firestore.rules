@@ -2,33 +2,71 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
     
-    // 🛡️ Tasks Collection - רק המשתמש יכול לגשת למשימות שלו
+    // 🛡️ Tasks Collection - פיתוח: גישה מלאה, פרודקשן: רק למשתמש
     match /tasks/{taskId} {
-      allow read, write: if request.auth != null 
-        && request.auth.uid == resource.data.userId;
-      allow create: if request.auth != null 
-        && request.auth.uid == request.resource.data.userId
-        && validateTask(request.resource.data);
+      // Development mode - allow all for testing
+      allow read, write: if true;
+      
+      // Production mode (uncomment when deploying):
+      // allow read, write: if request.auth != null 
+      //   && request.auth.uid == resource.data.userId;
+      // allow create: if request.auth != null 
+      //   && request.auth.uid == request.resource.data.userId
+      //   && validateTask(request.resource.data);
     }
     
-    // 🛡️ Chat Messages - רק המשתמש יכול לגשת להודעות שלו
-    match /chat_messages/{messageId} {
-      allow read, write: if request.auth != null 
-        && request.auth.uid == resource.data.userId;
-      allow create: if request.auth != null 
-        && request.auth.uid == request.resource.data.userId
-        && validateChatMessage(request.resource.data);
-    }
-    
-    // 🛡️ User Profiles - רק המשתמש יכול לגשת לפרופיל שלו
+    // 🛡️ User Profiles + Sub-Collections - פיתוח: גישה מלאה
     match /users/{userId} {
-      allow read, write: if request.auth != null 
-        && request.auth.uid == userId;
+      // Development mode - allow all for testing
+      allow read, write: if true;
+      
+      // Production mode (uncomment when deploying):
+      // allow read, write: if request.auth != null 
+      //   && request.auth.uid == userId;
+      
+      // 💬 Chat Sessions Sub-Collection
+      match /chat_sessions/{sessionId} {
+        // Development mode - allow all for testing
+        allow read, write: if true;
+        
+        // Production mode (uncomment when deploying):
+        // allow read, write: if request.auth != null 
+        //   && request.auth.uid == userId;
+        // allow create: if request.auth != null 
+        //   && request.auth.uid == userId
+        //   && validateChatSession(request.resource.data);
+      }
+      
+      // 📨 Chat Messages Sub-Collection
+      match /chat_messages/{messageId} {
+        // Development mode - allow all for testing
+        allow read, write: if true;
+        
+        // Production mode (uncomment when deploying):
+        // allow read, write: if request.auth != null 
+        //   && request.auth.uid == userId;
+        // allow create: if request.auth != null 
+        //   && request.auth.uid == userId
+        //   && validateChatMessage(request.resource.data);
+      }
     }
     
-    // 🚫 הכל אחר - אסור
+    // 🛡️ Legacy Chat Messages - פיתוח: גישה מלאה (לתמיכה בקוד קיים)
+    match /chat_messages/{messageId} {
+      // Development mode - allow all for testing
+      allow read, write: if true;
+      
+      // Production mode (uncomment when deploying):
+      // allow read, write: if request.auth != null 
+      //   && request.auth.uid == resource.data.userId;
+      // allow create: if request.auth != null 
+      //   && request.auth.uid == request.resource.data.userId
+      //   && validateChatMessage(request.resource.data);
+    }
+    
+    // � פיתוח: הכל מותר למטרות בדיקה
     match /{document=**} {
-      allow read, write: if false;
+      allow read, write: if true;
     }
   }
   
@@ -44,14 +82,28 @@ service cloud.firestore {
       && task.updatedAt is timestamp;
   }
   
-  // 💬 ולידציה להודעות צ'אט
+  // �️ ולידציה לsessions
+  function validateChatSession(session) {
+    return session.keys().hasAll(['title', 'created_at', 'updated_at', 'status'])
+      && session.title is string
+      && session.title.size() > 0
+      && session.title.size() <= 100
+      && session.status in ['active', 'archived']
+      && session.created_at is timestamp
+      && session.updated_at is timestamp
+      && session.message_count is number
+      && session.message_count >= 0;
+  }
+  
+  // �💬 ולידציה להודעות צ'אט
   function validateChatMessage(message) {
-    return message.keys().hasAll(['content', 'sender', 'timestamp', 'userId'])
+    return message.keys().hasAll(['content', 'sender', 'timestamp'])
       && message.content is string
       && message.content.size() > 0
       && message.content.size() <= 5000
-      && message.sender in ['user', 'ai']
-      && message.userId is string
-      && message.timestamp is timestamp;
+      && message.sender in ['user', 'ai', 'assistant']
+      && message.timestamp is timestamp
+      && (message.keys().hasAny(['session_id']) ? message.session_id is string : true)
+      && (message.keys().hasAny(['type']) ? message.type in ['text', 'task', 'suggestion'] : true);
   }
 }

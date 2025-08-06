@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+/* cspell:disable */
+import React, { useState, useEffect } from 'react';
 import { Container, Paper, Typography, Button, Box, Alert } from '@mui/material';
 import { Google as GoogleIcon } from '@mui/icons-material';
 import { AuthService } from '../services/AuthService';
@@ -7,7 +8,44 @@ const LoginScreen: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const handleGoogleSignIn = async () => {
+  useEffect(() => {
+    // בדוק אם יש קוד מGoogle OAuth
+    const urlParams = new URLSearchParams(window.location.search);
+    const code = urlParams.get('code');
+    
+    if (code) {
+      console.log('🔑 Got OAuth code:', code);
+      handleOAuthCallback(code);
+    }
+  }, []);
+
+  const handleOAuthCallback = async (code: string) => {
+    console.log('🔄 Processing OAuth callback...');
+    setLoading(true);
+    
+    try {
+      const response = await fetch('http://localhost:4000/api/auth/google', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ code })
+      });
+      
+      const data = await response.json();
+      console.log('✅ Token exchange successful:', data);
+      
+      localStorage.setItem('taskflow-user', JSON.stringify(data.user));
+      window.history.replaceState({}, document.title, window.location.pathname);
+      window.location.reload();
+      
+    } catch (error: any) {
+      console.error('❌ Token exchange failed:', error);
+      setError('התחברות נכשלה: ' + error.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleGoogleLogin = async () => {
     setLoading(true);
     setError(null);
     try {
@@ -39,7 +77,7 @@ const LoginScreen: React.FC = () => {
           variant="contained"
           size="large"
           startIcon={<GoogleIcon />}
-          onClick={handleGoogleSignIn}
+          onClick={handleGoogleLogin}
           disabled={loading}
           sx={{ py: 2, px: 4, fontSize: '1.1rem' }}
         >

@@ -1,3 +1,4 @@
+/* cspell:disable */
 import { ChatMessage, AIContext } from '../types';
 
 export class AIService {
@@ -37,43 +38,34 @@ export class AIService {
     }[];
   }> {
     try {
-      const contextMessage = this.buildContextMessage(context);
-      const historyMessages = this.buildHistoryMessages(chatHistory);
+      console.log('🚀 Sending message to backend...', message);
 
-      const response = await fetch('https://api.anthropic.com/v1/messages', {
+      // שלח ל-backend במקום ישירות ל-Claude
+      const response = await fetch('http://localhost:4000/api/chat/send', {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json',
-          'x-api-key': process.env.REACT_APP_CLAUDE_API_KEY || 'temp-key',
-          'anthropic-version': '2023-06-01'
+          'Content-Type': 'application/json'
         },
         body: JSON.stringify({
-          model: "claude-3-haiku-20240307",
-          max_tokens: 1024,
-          messages: [
-            { role: "assistant", content: contextMessage },
-            ...historyMessages,
-            { role: "user", content: message }
-          ],
-          system: this.systemPrompt
+          message: message,
+          userId: 'atiaron',
+          context: context,
+          chatHistory: chatHistory
         })
       });
 
       if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Server error');
       }
 
       const data = await response.json();
-      const content = data.content[0];
-      
-      if (content && content.type === 'text') {
-        return {
-          response: content.text,
-          actions: this.extractActions(content.text)
-        };
-      }
+      console.log('✅ Backend response received:', data);
 
-      return { response: "מצטער, לא הצלחתי להבין את הבקשה." };
+      return {
+        response: data.response,
+        actions: data.actions || []
+      };
 
     } catch (error) {
       console.error('AI Service Error:', error);
@@ -107,7 +99,7 @@ ${tasksInfo}
   }
 
   private static extractActions(response: string): any[] {
-    const actions: any[] = = [];
+    const actions: any[] = [];
     
     const createTaskRegex = /יוצר משימה:\s*(.+)/g;
     let match;
@@ -127,21 +119,18 @@ ${tasksInfo}
 
   static async generateTaskSuggestions(userInput: string): Promise<string[]> {
     try {
-      const response = await fetch('https://api.anthropic.com/v1/messages', {
+      console.log('🚀 Generating task suggestions via backend...');
+
+      const response = await fetch('http://localhost:4000/api/chat/send', {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json',
-          'x-api-key': process.env.REACT_APP_CLAUDE_API_KEY || 'temp-key',
-          'anthropic-version': '2023-06-01'
+          'Content-Type': 'application/json'
         },
         body: JSON.stringify({
-          model: "claude-3-haiku-20240307",
-          max_tokens: 512,
-          messages: [{
-            role: "user",
-            content: `בהתבסס על הקלט "${userInput}", הצע 3-5 משימות קונקרטיות. החזר רק רשימה של משימות, משימה אחת בכל שורה.`
-          }],
-          system: "אתה עוזר שמציע משימות קונקרטיות. ענה בעברית ובפורמט של רשימה פשוטה."
+          message: `בהתבסס על הקלט "${userInput}", הצע 3-5 משימות קונקרטיות. החזר רק רשימה של משימות, משימה אחת בכל שורה.`,
+          userId: 'atiaron',
+          context: { currentTasks: [] },
+          chatHistory: []
         })
       });
 
@@ -150,10 +139,11 @@ ${tasksInfo}
       }
 
       const data = await response.json();
-      const content = data.content[0];
       
-      if (content && content.type === 'text') {
-        return content.text.split('\n').filter(line => line.trim()).map(line => line.replace(/^[-•*]\s*/, ''));
+      if (data.response) {
+        return data.response.split('\n')
+          .filter((line: string) => line.trim())
+          .map((line: string) => line.replace(/^[-•*]\s*/, ''));
       }
       
       return [];

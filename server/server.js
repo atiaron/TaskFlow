@@ -1,14 +1,24 @@
 const express = require('express');
 const cors = require('cors');
 const claudeRouter = require('./routes/claude');
+const chatRouter = require('./routes/chat');
+const authRouter = require('./routes/auth');
 require('dotenv').config();
 
 const app = express();
 const PORT = process.env.PORT || 4000;
 
-// Middleware
+// Middleware - CORS Updated for port 3003
 app.use(cors({
-  origin: ['http://localhost:3000', 'http://127.0.0.1:3000'],
+  origin: [
+    'http://localhost:3000', 
+    'http://127.0.0.1:3000', 
+    'http://localhost:3001',
+    'http://localhost:3002', 
+    'http://localhost:3003',  // ← תיקון עבור atiaron - 2025-08-06 11:10:17 UTC
+    'http://localhost:4001', 
+    'http://127.0.0.1:4001'
+  ],
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization']
@@ -44,6 +54,8 @@ app.get('/health', (req, res) => {
 
 // Routes
 app.use('/api/claude', claudeRouter);
+app.use('/api/chat', chatRouter);
+app.use('/api/auth', authRouter);
 
 // 404 Handler
 app.use((req, res) => {
@@ -51,7 +63,8 @@ app.use((req, res) => {
     error: 'Route not found',
     availableRoutes: [
       'GET /health',
-      'POST /api/claude'
+      'POST /api/claude',
+      'POST /api/chat/send'
     ]
   });
 });
@@ -71,8 +84,10 @@ app.listen(PORT, () => {
   console.log('📍 URL:', `http://localhost:${PORT}`);
   console.log('🕐 Time:', new Date().toLocaleString('he-IL'));
   console.log('🔑 Claude API:', process.env.CLAUDE_API_KEY ? '✅ Configured' : '❌ Missing');
+  console.log('🤖 Chat endpoint: /api/chat/send');
   console.log('⚡ Function Calling: ✅ Enabled');
   console.log('🔥 Firebase: ✅ Ready');
+  console.log('🌐 CORS: Updated for ports 3000-3003, 4001 ✅');  // ← הוספה חדשה
   console.log('---');
 });
 

@@ -1,11 +1,13 @@
 body {
   margin: 0;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+  font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', 'Roboto', 'Oxygen',
     'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
     sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   direction: rtl;
+  background-color: #FAFBFC;
+  line-height: 1.6;
 }
 
 code {
@@ -15,4 +17,52 @@ code {
 
 * {
   box-sizing: border-box;
+}
+
+/* סגנונות גלובליים לאסטטיקה */
+.MuiPaper-root {
+  background-color: #FFFFFF !important;
+}
+
+/* אנימציות חלקות */
+* {
+  transition: all 0.2s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+/* ציור מותאם של scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #c1c1c1;
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #a1a1a1;
+}
+
+/* אפקטים על hover */
+.task-item {
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.task-item:hover {
+  transform: translateY(-1px);
+}
+
+/* אנימציה לכפתורים */
+.MuiFab-root {
+  transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94) !important;
+}
+
+.MuiFab-root:hover {
+  transform: translateY(-2px) !important;
 }

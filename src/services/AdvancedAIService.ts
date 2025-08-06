@@ -1,3 +1,6 @@
+/* cspell:disable */
+import { Task } from '../types';
+
 export class AdvancedAIService {
   
   // 🧠 זיכרון חכם - AI יזכור הכל עליך

@@ -1,3 +1,4 @@
+/* cspell:disable */
 import React, { useState, useEffect, useMemo } from 'react';
 import {
   TextField,
@@ -11,6 +12,7 @@ import {
   Autocomplete
 } from '@mui/material';
 import { Search, Clear, Psychology } from '@mui/icons-material';
+import { Task } from '../types';
 
 interface SmartSearchProps {
   tasks: Task[];
@@ -43,11 +45,9 @@ const SmartSearch: React.FC<SmartSearchProps> = ({ tasks, onFilteredTasks }) => 
       const statusMatch = checkStatusQuery(query, task);
       
       // חיפוש לפי תגיות
-      const tagMatch = task.tags?.some(tag => 
+      const tagMatch = task.tags?.some((tag: string) =>
         tag.toLowerCase().includes(query)
-      );
-
-      return basicMatch || dateMatch || priorityMatch || statusMatch || tagMatch;
+      );      return basicMatch || dateMatch || priorityMatch || statusMatch || tagMatch;
     });
   }, [searchQuery, tasks]);
 
@@ -112,7 +112,7 @@ const SmartSearch: React.FC<SmartSearchProps> = ({ tasks, onFilteredTasks }) => 
     // הוסף תגיות קיימות
     const existingTags = new Set<string>();
     tasks.forEach(task => {
-      task.tags?.forEach(tag => existingTags.add(tag));
+      task.tags?.forEach((tag: string) => existingTags.add(tag));
     });
 
     return [...suggestions, ...Array.from(existingTags)];
