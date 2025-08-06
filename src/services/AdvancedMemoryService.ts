@@ -125,10 +125,10 @@ export class TaskFlowMemorySystem {
     // Add to working memory
     this.workingMemory.currentSession.push({
       id: fullInteraction.id,
+      chat_id: '', // Default empty chat_id as required by Message interface
       content: this.extractMessageContent(fullInteraction),
       sender: fullInteraction.type.includes('chat') ? 'user' : 'ai',
-      timestamp: fullInteraction.timestamp,
-      type: 'text'
+      timestamp: fullInteraction.timestamp
     });
 
     // Add to episodic memory

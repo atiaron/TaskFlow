@@ -184,10 +184,10 @@ ${formattedRecent}`;
     // Create a virtual message for token counting
     return [{
       id: 'summary',
+      chat_id: '', // Default empty chat_id as required by Message interface
       content: summary,
       sender: 'ai' as const, // Use 'ai' instead of 'system'
-      timestamp: new Date(),
-      type: 'text' as const
+      timestamp: new Date()
     }];
   }
 
@@ -209,10 +209,10 @@ ${formattedRecent}`;
   static validateContext(context: string): boolean {
     const tokenCount = this.estimateTokens([{
       id: 'test',
+      chat_id: '', // Default empty chat_id as required by Message interface
       content: context,
       sender: 'ai', // Use 'ai' instead of 'system'
-      timestamp: new Date(),
-      type: 'text'
+      timestamp: new Date()
     }]);
 
     return tokenCount <= this.config.maxTokens;
