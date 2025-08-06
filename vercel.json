@@ -18,10 +18,5 @@
       "src": "/(.*)",
       "dest": "/index.html"
     }
-  ],
-  "functions": {
-    "app": {
-      "includeFiles": "build/**"
-    }
-  }
+  ]
 }
