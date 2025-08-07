@@ -1,6 +1,7 @@
 /* Enhanced Tool Registry for TaskFlow */
 import { Task, User, AIContext } from '../types';
 import { StorageService } from './StorageService';
+import { getTaskCreatedAt, getTaskUpdatedAt, isTaskCompleted } from '../utils/taskHelpers';
 
 // Define tool interfaces
 export interface Tool {
@@ -590,8 +591,8 @@ export class AnalyticsTool implements Tool {
     if (completedTasks.length === 0) return 0;
     
     const totalDuration = completedTasks.reduce((sum, task) => {
-      const created = new Date(task.createdAt);
-      const completed = new Date(task.updatedAt);
+      const created = getTaskCreatedAt(task);
+      const completed = getTaskUpdatedAt(task);
       return sum + (completed.getTime() - created.getTime());
     }, 0);
     
