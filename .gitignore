@@ -143,3 +143,8 @@ vite.config.ts.timestamp-*
 .webpack-cache/
 node_modules/.cache/
 .vercel
+
+# Health check reports (keep directory but ignore generated reports)
+reports/*.html
+reports/*.json
+!reports/README.md

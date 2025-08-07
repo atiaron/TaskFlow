@@ -1,0 +1,49 @@
+# TaskFlow Health Check Runtime Configuration
+# This file contains runtime settings that can be modified without code changes
+
+# General Settings
+CHECK_TIMEOUT=300000
+VERBOSE_OUTPUT=true
+COLORED_OUTPUT=true
+SAVE_REPORTS=true
+
+# Environment Detection
+AUTO_DETECT_ENV=true
+FORCE_ENVIRONMENT=
+
+# Skip Specific Checks (comma-separated list)
+SKIP_CHECKS=
+
+# Firebase Settings
+FIREBASE_TIMEOUT=10000
+FIREBASE_RETRIES=3
+USE_FIREBASE_EMULATOR=auto
+
+# Performance Settings
+PERFORMANCE_TIMEOUT=60000
+LIGHTHOUSE_TIMEOUT=90000
+BUNDLE_ANALYSIS=true
+
+# Security Settings
+SECURITY_SCAN=true
+CSP_CHECK=true
+VULNERABILITY_SCAN=true
+
+# Browser Testing
+HEADLESS_BROWSER=true
+BROWSER_TIMEOUT=30000
+
+# Reporting
+REPORT_FORMAT=both
+OPEN_REPORT=false
+COMPRESS_REPORTS=false
+
+# Notifications
+SLACK_NOTIFICATIONS=false
+EMAIL_NOTIFICATIONS=false
+ONLY_FAILURES=true
+
+# Debug Settings
+DEBUG_MODE=false
+KEEP_TEMP_FILES=false
+LOG_LEVEL=info

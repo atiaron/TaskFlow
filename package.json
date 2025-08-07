@@ -41,6 +41,11 @@
     "type-check-watch": "npx tsc --noEmit --watch",
     "build-check": "npm run type-check && npm run build",
     "deploy-ready": "npm run type-check && npm run build && npm run test --watchAll=false",
+    "health-check": "node scripts/health-check.js",
+    "health-check:production": "node scripts/health-check.js --env=production",
+    "health-check:security": "node scripts/health-check.js --skip=deployment,browser,performance",
+    "health-check:performance": "node scripts/health-check.js --skip=security,deployment,firebase",
+    "health-check:quick": "node scripts/health-check.js --skip=deployment,browser --no-save",
     "prepare": "husky"
   },
   "eslintConfig": {
@@ -68,12 +73,21 @@
   },
   "devDependencies": {
     "@craco/craco": "^7.1.0",
+    "@types/node": "^24.2.0",
     "@types/react": "^18.2.15",
     "@types/react-dom": "^18.2.7",
+    "chalk": "^5.5.0",
+    "chrome-launcher": "^1.2.0",
+    "cli-progress": "^3.12.0",
+    "commander": "^14.0.0",
     "cross-env": "^10.0.0",
     "esbuild": "^0.25.8",
     "esbuild-loader": "^4.3.0",
-    "husky": "^9.1.7"
+    "firebase-admin": "^13.4.0",
+    "husky": "^9.1.7",
+    "lighthouse": "^12.8.1",
+    "puppeteer": "^24.16.0",
+    "webpack-bundle-analyzer": "^4.10.2"
   },
   "overrides": {
     "webpack": "^5.0.0"
