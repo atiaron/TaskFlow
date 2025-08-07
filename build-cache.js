@@ -9,7 +9,17 @@ const CACHE_KEY_FILE = path.join(CACHE_DIR, 'cache-key.txt');
 function generateCacheKey() {
   const packageJson = fs.readFileSync('package.json', 'utf8');
   const srcFiles = getAllTsFiles('src');
-  const combinedContent = packageJson + srcFiles.join('');
+  
+  // Include config files that affect deployment
+  let configContent = '';
+  const configFiles = ['vercel.json', 'craco.config.js', 'tsconfig.json'];
+  configFiles.forEach(file => {
+    if (fs.existsSync(file)) {
+      configContent += fs.readFileSync(file, 'utf8');
+    }
+  });
+  
+  const combinedContent = packageJson + srcFiles.join('') + configContent;
   return crypto.createHash('md5').update(combinedContent).digest('hex');
 }
 

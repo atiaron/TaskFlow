@@ -8,6 +8,8 @@
  * - Data validation before Firestore operations
  * - Security headers and CSP
  * - Session management and token validation
+ * 
+ * Version: 2.0 with CSP headers
  */
 
 export interface SecurityValidationResult {

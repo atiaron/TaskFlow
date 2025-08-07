@@ -142,3 +142,4 @@ vite.config.ts.timestamp-*
 .build-cache/
 .webpack-cache/
 node_modules/.cache/
+.vercel
