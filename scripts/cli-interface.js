@@ -23,7 +23,6 @@ const log = {
 
 // Import our QA modules
 const AdvancedHealthCheck = require('./advanced-health-check');
-const SmartTestOrchestrator = require('./test-orchestrator');
 
 // Package info
 const packageJson = require('../package.json');
@@ -200,22 +199,23 @@ async function runUltimateTest(options) {
   };
 
   try {
-    console.log(chalk.blue.bold('🚀 Starting Ultimate Test Suite...'));
-    console.log(chalk.gray(`Environment: ${config.system.environment}`));
-    console.log(chalk.gray(`Parallel: ${options.parallel}`));
-    console.log(chalk.gray(`Smart Selection: ${options.smart}`));
+    log.blue('🚀 Starting Ultimate Test Suite...');
+    log.blue(`Environment: ${config.system.environment}`);
+    log.blue(`Parallel: ${options.parallel}`);
+    log.blue(`Smart Selection: ${options.smart}`);
     console.log('');
 
     // 1. Health Check
     if (!options.skipHealth) {
-      console.log(chalk.yellow('Step 1/4: Running Health Check...'));
+      log.blue('Step 1/4: Running Health Check...');
       const healthCheck = new AdvancedHealthCheck();
       results.health = await healthCheck.runFullHealthCheck();
     }
 
     // 2. Smart Test Execution
     if (!options.skipTests) {
-      console.log(chalk.yellow('Step 2/4: Executing Smart Tests...'));
+      console.log('Step 2/4: Executing Smart Tests...');
+      const SmartTestOrchestrator = require('./test-orchestrator-simple');
       const testOrchestrator = new SmartTestOrchestrator({
         parallel: options.parallel,
         smartSelection: options.smart,
@@ -227,14 +227,14 @@ async function runUltimateTest(options) {
 
     // 3. Security Analysis
     if (!options.skipSecurity) {
-      console.log(chalk.yellow('Step 3/4: Security Analysis...'));
+      log.blue('Step 3/4: Security Analysis...');
       // Security analysis would be implemented here
       results.security = { score: 85, vulnerabilities: [] };
     }
 
     // 4. Performance Analysis
     if (!options.skipPerformance) {
-      console.log(chalk.yellow('Step 4/4: Performance Analysis...'));
+      log.blue('Step 4/4: Performance Analysis...');
       // Performance analysis would be implemented here
       results.performance = { score: 88, metrics: {} };
     }
@@ -250,7 +250,7 @@ async function runUltimateTest(options) {
     process.exit(results.overall.score >= 80 ? 0 : 1);
 
   } catch (error) {
-    console.error(chalk.red('❌ Ultimate test suite failed:'), error.message);
+    log.error(`Ultimate test suite failed: ${error.message}`);
     process.exit(1);
   }
 }
@@ -259,9 +259,10 @@ async function runUltimateTest(options) {
  * 🧠 Run Smart Test Suite
  */
 async function runSmartTest(pattern, options) {
-  console.log(chalk.blue.bold('🧠 Starting Smart Test Execution...'));
+  log.blue('🧠 Starting Smart Test Execution...');
   
   try {
+    const SmartTestOrchestrator = require('./test-orchestrator-simple');
     const testOrchestrator = new SmartTestOrchestrator({
       parallel: options.parallel !== false,
       smartSelection: options.smart !== false,
@@ -274,7 +275,7 @@ async function runSmartTest(pattern, options) {
     
     process.exit(passRate >= 70 ? 0 : 1);
   } catch (error) {
-    console.error(chalk.red('❌ Smart test execution failed:'), error.message);
+    log.error(`Smart test execution failed: ${error.message}`);
     process.exit(1);
   }
 }
@@ -301,7 +302,7 @@ async function runHealthCheck(options) {
  * 🔍 Run Quality Audit
  */
 async function runQualityAudit(options) {
-  console.log(chalk.blue.bold('🔍 Starting Quality Audit...'));
+  log.blue('🔍 Starting Quality Audit...');
   
   const spinner = ora('Performing comprehensive quality analysis...').start();
   
@@ -321,14 +322,14 @@ async function runQualityAudit(options) {
     
     spinner.succeed('Quality audit completed!');
     
-    console.log(chalk.green('\n✅ Quality Audit Results:'));
+    log.blue('\n✅ Quality Audit Results:');
     console.log(`📊 Overall Quality Score: ${auditReport.overallScore}%`);
     console.log(`🏥 System Health: ${results.health.overall.score}%`);
     console.log(`🧪 Test Coverage: ${calculateTestCoverage(results.tests)}%`);
     
   } catch (error) {
     spinner.fail('Quality audit failed');
-    console.error(chalk.red('❌ Quality audit failed:'), error.message);
+    log.error(`❌ Quality audit failed:: ${error.message}`);
     process.exit(1);
   }
 }
@@ -337,13 +338,13 @@ async function runQualityAudit(options) {
  * 🛡️ Run Security Scan
  */
 async function runSecurityScan(options) {
-  console.log(chalk.blue.bold('🛡️ Starting Security Scan...'));
+  log.blue('🛡️ Starting Security Scan...');
   
   const spinner = ora('Scanning for security vulnerabilities...').start();
   
   try {
     // Simulate security scanning
-    await new Promise(resolve => setTimeout(resolve, 2000));
+    await new Promise(resolve => setTimeout(resolve, 2000);
     
     const securityResults = {
       vulnerabilities: {
@@ -362,7 +363,7 @@ async function runSecurityScan(options) {
 
     spinner.succeed('Security scan completed!');
     
-    console.log(chalk.green('\n🛡️ Security Scan Results:'));
+    log.blue('\n🛡️ Security Scan Results:');
     console.log(`📊 Security Score: ${securityResults.score}%`);
     console.log(`🚨 Critical: ${securityResults.vulnerabilities.critical}`);
     console.log(`⚠️ High: ${securityResults.vulnerabilities.high}`);
@@ -370,15 +371,15 @@ async function runSecurityScan(options) {
     console.log(`ℹ️ Low: ${securityResults.vulnerabilities.low}`);
     
     if (securityResults.recommendations.length > 0) {
-      console.log(chalk.yellow('\n📋 Recommendations:'));
+      log.blue('\n📋 Recommendations:');
       securityResults.recommendations.forEach(rec => {
-        console.log(chalk.yellow(`  • ${rec}`));
+        log.blue(`  • ${rec}`);
       });
     }
     
   } catch (error) {
     spinner.fail('Security scan failed');
-    console.error(chalk.red('❌ Security scan failed:'), error.message);
+    log.error(`❌ Security scan failed:: ${error.message}`);
     process.exit(1);
   }
 }
@@ -387,13 +388,13 @@ async function runSecurityScan(options) {
  * ⚡ Run Performance Analysis
  */
 async function runPerformanceAnalysis(options) {
-  console.log(chalk.blue.bold('⚡ Starting Performance Analysis...'));
+  log.blue('⚡ Starting Performance Analysis...');
   
   const spinner = ora('Analyzing performance metrics...').start();
   
   try {
     // Simulate performance analysis
-    await new Promise(resolve => setTimeout(resolve, 3000));
+    await new Promise(resolve => setTimeout(resolve, 3000);
     
     const performanceResults = {
       coreWebVitals: {
@@ -416,7 +417,7 @@ async function runPerformanceAnalysis(options) {
 
     spinner.succeed('Performance analysis completed!');
     
-    console.log(chalk.green('\n⚡ Performance Analysis Results:'));
+    log.blue('\n⚡ Performance Analysis Results:');
     console.log(`📊 Performance Score: ${performanceResults.score}%`);
     console.log(`🎯 LCP: ${performanceResults.coreWebVitals.lcp}ms`);
     console.log(`⚡ FID: ${performanceResults.coreWebVitals.fid}ms`);
@@ -425,7 +426,7 @@ async function runPerformanceAnalysis(options) {
     
   } catch (error) {
     spinner.fail('Performance analysis failed');
-    console.error(chalk.red('❌ Performance analysis failed:'), error.message);
+    log.error(`❌ Performance analysis failed:: ${error.message}`);
     process.exit(1);
   }
 }
@@ -434,13 +435,13 @@ async function runPerformanceAnalysis(options) {
  * ♿ Run Accessibility Check
  */
 async function runAccessibilityCheck(options) {
-  console.log(chalk.blue.bold('♿ Starting Accessibility Check...'));
+  log.blue('♿ Starting Accessibility Check...');
   
   const spinner = ora(`Checking WCAG ${options.level} compliance...`).start();
   
   try {
     // Simulate accessibility checking
-    await new Promise(resolve => setTimeout(resolve, 2000));
+    await new Promise(resolve => setTimeout(resolve, 2000);
     
     const accessibilityResults = {
       wcagLevel: options.level,
@@ -455,21 +456,21 @@ async function runAccessibilityCheck(options) {
 
     spinner.succeed('Accessibility check completed!');
     
-    console.log(chalk.green('\n♿ Accessibility Check Results:'));
+    log.blue('\n♿ Accessibility Check Results:');
     console.log(`📊 Accessibility Score: ${accessibilityResults.score}%`);
     console.log(`🎯 WCAG Level: ${accessibilityResults.wcagLevel}`);
     console.log(`✅ Passed: ${accessibilityResults.passed}/${accessibilityResults.total} checks`);
     
     if (accessibilityResults.violations.length > 0) {
-      console.log(chalk.yellow('\n🚨 Violations Found:'));
+      log.blue('\n🚨 Violations Found:');
       accessibilityResults.violations.forEach(violation => {
-        console.log(chalk.yellow(`  • ${violation.type}: ${violation.count} issues (${violation.severity})`));
+        log.blue(`  • ${violation.type}: ${violation.count} issues (${violation.severity})`);
       });
     }
     
   } catch (error) {
     spinner.fail('Accessibility check failed');
-    console.error(chalk.red('❌ Accessibility check failed:'), error.message);
+    log.error(`❌ Accessibility check failed:: ${error.message}`);
     process.exit(1);
   }
 }
@@ -478,30 +479,30 @@ async function runAccessibilityCheck(options) {
  * 📊 Generate Reports
  */
 async function generateReports(options) {
-  console.log(chalk.blue.bold('📊 Generating Quality Reports...'));
+  log.blue('📊 Generating Quality Reports...');
   
   const spinner = ora('Creating comprehensive reports...').start();
   
   try {
     // Simulate report generation
-    await new Promise(resolve => setTimeout(resolve, 2000));
+    await new Promise(resolve => setTimeout(resolve, 2000);
     
     spinner.succeed('Reports generated successfully!');
     
-    console.log(chalk.green('\n📊 Generated Reports:'));
+    log.blue('\n📊 Generated Reports:');
     console.log('  📄 quality-report.html');
     console.log('  📊 dashboard.html');
     console.log('  📈 trends-analysis.json');
     console.log('  👥 team-metrics.json');
     
     if (options.dashboard) {
-      console.log(chalk.blue('\n🚀 Starting interactive dashboard...'));
-      console.log(chalk.gray('Dashboard will be available at: http://localhost:3002'));
+      log.blue('\n🚀 Starting interactive dashboard...');
+      log.blue('Dashboard will be available at: http://localhost:3002');
     }
     
   } catch (error) {
     spinner.fail('Report generation failed');
-    console.error(chalk.red('❌ Report generation failed:'), error.message);
+    log.error(`❌ Report generation failed:: ${error.message}`);
     process.exit(1);
   }
 }
@@ -510,13 +511,13 @@ async function generateReports(options) {
  * 🤖 Run AI Assistant
  */
 async function runAIAssistant(options) {
-  console.log(chalk.blue.bold('🤖 Starting AI Quality Assistant...'));
+  log.blue('🤖 Starting AI Quality Assistant...');
   
   const spinner = ora('Analyzing codebase with AI...').start();
   
   try {
     // Simulate AI analysis
-    await new Promise(resolve => setTimeout(resolve, 3000));
+    await new Promise(resolve => setTimeout(resolve, 3000);
     
     const aiResults = {
       predictions: [
@@ -535,32 +536,32 @@ async function runAIAssistant(options) {
 
     spinner.succeed('AI analysis completed!');
     
-    console.log(chalk.green('\n🤖 AI Quality Assistant Results:'));
+    log.blue('\n🤖 AI Quality Assistant Results:');
     
     if (options.predictIssues && aiResults.predictions.length > 0) {
-      console.log(chalk.red('\n🔮 Predicted Issues:'));
+      log.blue('\n🔮 Predicted Issues:');
       aiResults.predictions.forEach(prediction => {
-        console.log(chalk.red(`  • ${prediction}`));
+        log.blue(`  • ${prediction}`);
       });
     }
     
     if (options.suggestTests && aiResults.suggestions.length > 0) {
-      console.log(chalk.yellow('\n💡 Test Suggestions:'));
+      log.blue('\n💡 Test Suggestions:');
       aiResults.suggestions.forEach(suggestion => {
-        console.log(chalk.yellow(`  • ${suggestion}`));
+        log.blue(`  • ${suggestion}`);
       });
     }
     
     if (options.optimizePerformance && aiResults.optimizations.length > 0) {
-      console.log(chalk.blue('\n⚡ Performance Optimizations:'));
+      log.blue('\n⚡ Performance Optimizations:');
       aiResults.optimizations.forEach(optimization => {
-        console.log(chalk.blue(`  • ${optimization}`));
+        log.blue(`  • ${optimization}`);
       });
     }
     
   } catch (error) {
     spinner.fail('AI analysis failed');
-    console.error(chalk.red('❌ AI analysis failed:'), error.message);
+    log.error(`❌ AI analysis failed:: ${error.message}`);
     process.exit(1);
   }
 }
@@ -569,24 +570,24 @@ async function runAIAssistant(options) {
  * 🎮 Start Team Dashboard
  */
 async function startTeamDashboard(options) {
-  console.log(chalk.blue.bold('🎮 Starting Team Dashboard...'));
+  log.blue('🎮 Starting Team Dashboard...');
   
   const spinner = ora('Initializing collaborative dashboard...').start();
   
   try {
     // Simulate dashboard startup
-    await new Promise(resolve => setTimeout(resolve, 2000));
+    await new Promise(resolve => setTimeout(resolve, 2000);
     
     spinner.succeed('Team dashboard started!');
     
-    console.log(chalk.green('\n🎮 Team Dashboard Active:'));
+    log.blue('\n🎮 Team Dashboard Active:');
     console.log(`🌐 URL: http://localhost:${options.port}`);
     console.log(`🔄 Real-time Updates: ${options.realtime ? 'Enabled' : 'Disabled'}`);
-    console.log(chalk.gray('\nPress Ctrl+C to stop the dashboard'));
+    log.blue('\nPress Ctrl+C to stop the dashboard');
     
     // Keep the process running
     process.on('SIGINT', () => {
-      console.log(chalk.yellow('\n🛑 Shutting down team dashboard...'));
+      log.blue('\n🛑 Shutting down team dashboard...');
       process.exit(0);
     });
     
@@ -597,7 +598,7 @@ async function startTeamDashboard(options) {
     
   } catch (error) {
     spinner.fail('Failed to start team dashboard');
-    console.error(chalk.red('❌ Dashboard startup failed:'), error.message);
+    log.error(`❌ Dashboard startup failed:: ${error.message}`);
     process.exit(1);
   }
 }
@@ -662,9 +663,9 @@ Advanced Testing & Quality Assurance Platform
 Version ${packageJson.version}
 `;
   
-  console.log('='.repeat(50));
+  console.log('='.repeat(50);
   console.log(banner);
-  console.log('='.repeat(50));
+  console.log('='.repeat(50);
 }
 
 /**
@@ -708,16 +709,16 @@ function calculateOverallResults(results) {
  * Display ultimate results
  */
 function displayUltimateResults(results) {
-  console.log('\n' + chalk.blue.bold('🏆 ULTIMATE QA RESULTS'));
-  console.log(chalk.gray('='.repeat(60)));
+  console.log('\n' + '🏆 ULTIMATE QA RESULTS');
+  log.blue('='.repeat(60));
   
   const scoreColor = results.overall.score >= 90 ? chalk.green : 
                     results.overall.score >= 80 ? chalk.yellow : chalk.red;
   
-  console.log(`\n${chalk.bold('🎯 Overall Quality Score:')} ${scoreColor(results.overall.score + '%')}`);
-  console.log(`${chalk.bold('⏱️ Total Duration:')} ${(results.duration / 1000).toFixed(1)}s`);
+  console.log(`\n${'🎯 Overall Quality Score:'} ${scoreColor(results.overall.score + '%')}`);
+  console.log(`${'⏱️ Total Duration:'} ${(results.duration / 1000).toFixed(1)}s`);
   
-  console.log('\n' + chalk.bold('Component Breakdown:'));
+  console.log('\n' + 'Component Breakdown:');
   if (results.health) {
     console.log(`🏥 System Health: ${getScoreEmoji(results.health.overall.score)} ${results.health.overall.score}%`);
   }
@@ -732,7 +733,7 @@ function displayUltimateResults(results) {
     console.log(`⚡ Performance: ${getScoreEmoji(results.performance.score)} ${results.performance.score}%`);
   }
   
-  console.log('\n' + chalk.green('🎉 Ultimate QA execution completed!'));
+  console.log('\n' + '🎉 Ultimate QA execution completed!');
 }
 
 /**

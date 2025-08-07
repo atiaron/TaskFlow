@@ -15,9 +15,20 @@ const path = require('path');
 const { spawn, exec } = require('child_process');
 const { promisify } = require('util');
 const execAsync = promisify(exec);
-const chalk = require('chalk');
-const ora = require('ora');
 const config = require('../config/master-config');
+
+// Simple logging without external dependencies
+const log = {
+  info: (msg) => console.log(`ℹ️  ${msg}`),
+  success: (msg) => console.log(`✅ ${msg}`),
+  error: (msg) => console.log(`❌ ${msg}`),
+  warning: (msg) => console.log(`⚠️  ${msg}`),
+  blue: (msg) => console.log(`🔵 ${msg}`),
+  yellow: (msg) => console.log(`🟡 ${msg}`),
+  green: (msg) => console.log(`🟢 ${msg}`),
+  red: (msg) => console.log(`🔴 ${msg}`),
+  gray: (msg) => console.log(`⚪ ${msg}`),
+};
 
 class SmartTestOrchestrator {
   constructor(options = {}) {
@@ -55,10 +66,10 @@ class SmartTestOrchestrator {
    * 🎯 Main orchestration method
    */
   async orchestrateTests(testPattern = null) {
-    console.log(chalk.blue.bold('🧠 Starting Smart Test Orchestration...'));
-    console.log(chalk.gray(`Parallel: ${this.options.parallel}`));
-    console.log(chalk.gray(`Smart Selection: ${this.options.smartSelection}`));
-    console.log(chalk.gray(`Test Pattern: ${testPattern || 'all'}`));
+    log.blue('🧠 Starting Smart Test Orchestration...');
+    log.gray(`Parallel: ${this.options.parallel}`);
+    log.gray(`Smart Selection: ${this.options.smartSelection}`);
+    log.gray(`Test Pattern: ${testPattern || 'all'}`);
     console.log('');
 
     const startTime = Date.now();
@@ -94,7 +105,7 @@ class SmartTestOrchestrator {
       return this.testResults;
       
     } catch (error) {
-      console.error(chalk.red('❌ Test orchestration failed:'), error.message);
+      log.error(`Test orchestration failed: ${error.message}`);
       throw error;
     }
   }
@@ -103,7 +114,7 @@ class SmartTestOrchestrator {
    * 🔍 Discover all available test suites
    */
   async discoverTestSuites(pattern) {
-    this.spinner = ora('🔍 Discovering test suites...').start();
+    log.info('🔍 Discovering test suites...');
     
     try {
       // Look for different types of tests
@@ -141,9 +152,9 @@ class SmartTestOrchestrator {
 
       this.testSuites.sort((a, b) => a.priority - b.priority);
       
-      this.spinner.succeed(`🔍 Discovered ${this.testSuites.length} test suites with ${this.getTotalTestFiles()} test files`);
+      log.success(`🔍 Discovered ${this.testSuites.length} test suites with ${this.getTotalTestFiles()} test files`);
     } catch (error) {
-      this.spinner.fail('🔍 Test discovery failed');
+      log.error('🔍 Test discovery failed');
       throw error;
     }
   }
@@ -152,7 +163,7 @@ class SmartTestOrchestrator {
    * 🧠 Intelligent test selection based on code changes
    */
   async performSmartTestSelection() {
-    this.spinner = ora('🧠 Analyzing code changes for smart test selection...').start();
+    this.spinner = log.info.start();
     
     try {
       // Get changed files since last commit
@@ -200,7 +211,7 @@ class SmartTestOrchestrator {
    */
   async executeTestSuites() {
     if (this.testSuites.length === 0) {
-      console.log(chalk.yellow('⚠️ No test suites to execute'));
+      log.info('⚠️ No test suites to execute');
       return;
     }
 
@@ -217,7 +228,7 @@ class SmartTestOrchestrator {
    * 🔄 Execute tests in parallel
    */
   async executeTestsInParallel(maxConcurrency) {
-    this.spinner = ora(`🚀 Executing ${this.testSuites.length} test suites in parallel (max ${maxConcurrency})...`).start();
+    this.spinner = log.info...`).start();
     
     const executing = [];
     const queue = [...this.testSuites];
@@ -253,7 +264,7 @@ class SmartTestOrchestrator {
    * ➡️ Execute tests sequentially
    */
   async executeTestsSequentially() {
-    this.spinner = ora('➡️ Executing test suites sequentially...').start();
+    this.spinner = log.info.start();
     
     for (const suite of this.testSuites) {
       this.spinner.text = `Running ${suite.name} tests...`;
@@ -332,7 +343,7 @@ class SmartTestOrchestrator {
     const maxRetries = this.config.testing.resilience.maxRetries;
     const baseDelay = this.config.testing.resilience.retryDelay;
     
-    console.log(chalk.yellow(`🔄 Retrying ${this.failedTests.length} failed test suites...`));
+    log.info(`🔄 Retrying ${this.failedTests.length} failed test suites...`);
     
     for (let attempt = 1; attempt <= maxRetries; attempt++) {
       const stillFailing = [];
@@ -343,7 +354,7 @@ class SmartTestOrchestrator {
           await this.sleep(delay);
         }
         
-        console.log(chalk.gray(`  Retry ${attempt}/${maxRetries}: ${suite.name}`));
+        log.info(`  Retry ${attempt}/${maxRetries}: ${suite.name}`);
         
         try {
           const retryResult = await this.executeTestSuite(suite);
@@ -365,13 +376,13 @@ class SmartTestOrchestrator {
       this.failedTests = stillFailing;
       
       if (this.failedTests.length === 0) {
-        console.log(chalk.green(`✅ All tests passed after ${attempt} retries`));
+        log.info(`✅ All tests passed after ${attempt} retries`);
         break;
       }
     }
     
     if (this.failedTests.length > 0) {
-      console.log(chalk.red(`❌ ${this.failedTests.length} test suites still failing after ${maxRetries} retries`));
+      log.info(`❌ ${this.failedTests.length} test suites still failing after ${maxRetries} retries`);
     }
   }
 
@@ -379,7 +390,7 @@ class SmartTestOrchestrator {
    * 📊 Analyze test results and detect regressions
    */
   async analyzeTestResults() {
-    this.spinner = ora('📊 Analyzing test results...').start();
+    this.spinner = log.info.start();
     
     try {
       // Calculate final summary
@@ -452,7 +463,7 @@ class SmartTestOrchestrator {
       }
       
       await fs.mkdir(path.dirname(historyPath), { recursive: true });
-      await fs.writeFile(historyPath, JSON.stringify(history, null, 2));
+      await fs.writeFile(historyPath, JSON.stringify(history, null, 2);
       
     } catch (error) {
       console.warn('Could not analyze performance regressions:', error.message);
@@ -513,7 +524,7 @@ class SmartTestOrchestrator {
     
     // Save updated flaky history
     await fs.mkdir(path.dirname(flakyPath), { recursive: true });
-    await fs.writeFile(flakyPath, JSON.stringify(flakyHistory, null, 2));
+    await fs.writeFile(flakyPath, JSON.stringify(flakyHistory, null, 2);
   }
 
   // ==============================================
@@ -602,7 +613,7 @@ class SmartTestOrchestrator {
       status: Math.random() > 0.1 ? 'passed' : 'failed', // 90% pass rate
       duration: Math.random() * 500 + 50,
       assertions: Math.floor(Math.random() * 10) + 1,
-    }));
+    });
 
     const passed = tests.filter(t => t.status === 'passed').length;
     const failed = tests.filter(t => t.status === 'failed').length;
@@ -635,7 +646,7 @@ class SmartTestOrchestrator {
         'src/utils/__tests__/helpers.test.ts',
       ];
       
-      return mockFiles.filter(file => file.includes('test'));
+      return mockFiles.filter(file => file.includes('test');
     } catch (error) {
       return [];
     }
@@ -772,7 +783,7 @@ class SmartTestOrchestrator {
 
     // JSON report
     const jsonPath = path.join(reportsDir, `test-results-${Date.now()}.json`);
-    await fs.writeFile(jsonPath, JSON.stringify(this.testResults, null, 2));
+    await fs.writeFile(jsonPath, JSON.stringify(this.testResults, null, 2);
 
     // HTML report
     const htmlReport = this.generateHTMLReport();
@@ -860,21 +871,21 @@ class SmartTestOrchestrator {
    * Display test results
    */
   displayResults() {
-    console.log('\n' + chalk.blue.bold('📊 TEST ORCHESTRATION RESULTS'));
-    console.log(chalk.gray('='.repeat(50)));
+    console.log('\n' + '📊 TEST ORCHESTRATION RESULTS');
+    log.info(50));
     
     const passRate = ((this.testResults.summary.passed / this.testResults.summary.total) * 100).toFixed(1);
     const statusColor = passRate >= 90 ? chalk.green : passRate >= 70 ? chalk.yellow : chalk.red;
     
-    console.log(`\n${chalk.bold('Overall Pass Rate:')} ${statusColor(passRate + '%')}`);
-    console.log(`${chalk.bold('Total Tests:')} ${this.testResults.summary.total}`);
-    console.log(`${chalk.green('Passed:')} ${this.testResults.summary.passed}`);
-    console.log(`${chalk.red('Failed:')} ${this.testResults.summary.failed}`);
-    console.log(`${chalk.gray('Skipped:')} ${this.testResults.summary.skipped}`);
-    console.log(`${chalk.bold('Duration:')} ${(this.testResults.summary.duration / 1000).toFixed(1)}s`);
+    console.log(`\n${'Overall Pass Rate:'} ${statusColor(passRate + '%')}`);
+    console.log(`${'Total Tests:'} ${this.testResults.summary.total}`);
+    console.log(`${'Passed:'} ${this.testResults.summary.passed}`);
+    console.log(`${'Failed:'} ${this.testResults.summary.failed}`);
+    console.log(`${'Skipped:'} ${this.testResults.summary.skipped}`);
+    console.log(`${'Duration:'} ${(this.testResults.summary.duration / 1000).toFixed(1)}s`);
 
     // Show suite breakdown
-    console.log('\n' + chalk.bold('Suite Breakdown:'));
+    console.log('\n' + 'Suite Breakdown:');
     this.testResults.suites.forEach(suite => {
       const statusEmoji = suite.status === 'passed' ? '✅' : '❌';
       const duration = (suite.duration / 1000).toFixed(1);
@@ -883,28 +894,28 @@ class SmartTestOrchestrator {
 
     // Show regressions
     if (this.testResults.regressions.length > 0) {
-      console.log('\n' + chalk.red.bold('Performance Regressions:'));
+      console.log('\n' + 'Performance Regressions:');
       this.testResults.regressions.forEach(reg => {
-        console.log(chalk.red(`  • ${reg.test}: ${reg.regression} slower`));
+        log.info(`  • ${reg.test}: ${reg.regression} slower`);
       });
     }
 
     // Show recommendations
     if (this.testResults.recommendations.length > 0) {
-      console.log('\n' + chalk.yellow.bold('Recommendations:'));
+      console.log('\n' + 'Recommendations:');
       this.testResults.recommendations.forEach(rec => {
-        console.log(chalk.yellow(`  • ${rec.message}`));
+        log.info(`  • ${rec.message}`);
       });
     }
 
-    console.log('\n' + chalk.green('✅ Test orchestration completed!'));
+    console.log('\n' + '✅ Test orchestration completed!');
   }
 
   /**
    * Sleep utility
    */
   async sleep(ms) {
-    return new Promise(resolve => setTimeout(resolve, ms));
+    return new Promise(resolve => setTimeout(resolve, ms);
   }
 
   // Placeholder methods for sophisticated analysis
@@ -934,7 +945,7 @@ async function main() {
     const passRate = (results.summary.passed / results.summary.total) * 100;
     process.exit(passRate >= 70 ? 0 : 1);
   } catch (error) {
-    console.error(chalk.red('❌ Test orchestration failed:'), error.message);
+    console.error('❌ Test orchestration failed:', error.message);
     process.exit(1);
   }
 }
