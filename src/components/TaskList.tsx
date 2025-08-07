@@ -64,6 +64,7 @@ import { FirebaseService } from '../services/FirebaseService';
 import { EnhancedClaudeService } from '../services/EnhancedClaudeService';
 import { SecurityManager } from '../services/SecurityManager';
 import { RealTimeSyncService } from '../services/RealTimeSyncService';
+import { AuthService } from '../services/AuthService';
 import GamificationSystem from './GamificationSystem';
 import SmartNotificationSystem, { useSmartNotifications } from './SmartNotificationSystem';
 import QuickActionsMenu from './QuickActionsMenu';
@@ -646,26 +647,81 @@ const TaskList: React.FC<TaskListProps> = ({
       {/* טיפ יומי */}
       <DailyTip />
 
-      {/* כותרת נקייה */}
-      <Box sx={{ mb: 4, textAlign: 'center' }}>
-        <Typography 
-          variant="h4" 
-          sx={{ 
-            fontWeight: 700,
-            color: 'text.primary',
-            mb: 1,
-            letterSpacing: '-0.02em'
-          }}
-        >
-          המשימות שלי
-        </Typography>
-        
-        <Typography variant="body1" color="text.secondary">
-          {stats.pending > 0 
-            ? `${stats.pending} משימות ממתינות` 
-            : 'כל המשימות הושלמו! 🎉'
-          }
-        </Typography>
+      {/* כותרת עם משתמש מחובר */}
+      <Box sx={{ mb: 4 }}>
+        {/* חיווי משתמש וכפתור התנתקות */}
+        <Box sx={{ 
+          display: 'flex', 
+          justifyContent: 'space-between', 
+          alignItems: 'center',
+          mb: 3,
+          p: 2,
+          borderRadius: 2,
+          bgcolor: 'primary.50',
+          border: 1,
+          borderColor: 'primary.200'
+        }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+            <Avatar 
+              src={user.photoURL || ''} 
+              alt={user.displayName || user.email}
+              sx={{ width: 40, height: 40 }}
+            >
+              {(user.displayName || user.email)?.charAt(0).toUpperCase()}
+            </Avatar>
+            <Box>
+              <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>
+                {user.displayName || 'משתמש'}
+              </Typography>
+              <Typography variant="body2" color="text.secondary">
+                {user.email}
+              </Typography>
+            </Box>
+          </Box>
+          
+          <Button
+            variant="outlined"
+            color="error"
+            size="small"
+            onClick={async () => {
+              try {
+                await AuthService.signOut();
+                // הניווט יקרה באופן אוטומטי דרך onAuthStateChanged ב-App.tsx
+              } catch (error) {
+                console.error('Logout failed:', error);
+              }
+            }}
+            sx={{
+              borderRadius: 2,
+              textTransform: 'none',
+              fontWeight: 600
+            }}
+          >
+            התנתק
+          </Button>
+        </Box>
+
+        {/* כותרת המשימות */}
+        <Box sx={{ textAlign: 'center' }}>
+          <Typography 
+            variant="h4" 
+            sx={{ 
+              fontWeight: 700,
+              color: 'text.primary',
+              mb: 1,
+              letterSpacing: '-0.02em'
+            }}
+          >
+            המשימות שלי
+          </Typography>
+          
+          <Typography variant="body1" color="text.secondary">
+            {stats.pending > 0 
+              ? `${stats.pending} משימות ממתינות` 
+              : 'כל המשימות הושלמו! 🎉'
+            }
+          </Typography>
+        </Box>
       </Box>
 
       {/* פילטרים אלגנטיים */}
