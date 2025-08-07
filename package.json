@@ -53,7 +53,9 @@
     "ai-assistant": "node scripts/cli-interface.js ai-assistant",
     "team-dashboard": "node scripts/cli-interface.js team-dashboard",
     "qa-setup": "node scripts/cli-interface.js setup",
-    "qa": "node scripts/cli-interface.js"
+    "qa": "node scripts/cli-interface.js",
+    "generate-test-cases": "node scripts/generate-test-cases.js",
+    "interactive-test-guide": "node scripts/interactive-test-guide.js"
   },
   "eslintConfig": {
     "extends": [
