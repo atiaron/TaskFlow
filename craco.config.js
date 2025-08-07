@@ -1,4 +1,19 @@
 module.exports = {
+  devServer: {
+    proxy: {
+      '/api': 'http://localhost:4000',
+    },
+    headers: {
+      'Content-Security-Policy': 
+        "script-src 'self' 'unsafe-inline' 'unsafe-eval' " +
+        "https://accounts.google.com https://www.gstatic.com " +
+        "http://localhost:4000; " +
+        "connect-src 'self' " +
+        "https://accounts.google.com https://www.google.com " +
+        "http://localhost:4000 http://127.0.0.1:4000"
+    }
+  },
+  
   webpack: {
     configure: (webpackConfig, { env, paths }) => {
       // ✅ ESBuild במקום TypeScript Compiler (מהיר פי 20!)

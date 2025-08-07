@@ -119,6 +119,8 @@ function App() {
   const { isOnline, isInstalled } = usePWA();
 
   useEffect(() => {
+    let mounted = true;
+
     console.log('🚀 App starting - setting up auth listener and services');
     
     // הסתרת מסך הטעינה
@@ -132,13 +134,11 @@ function App() {
       window.addEventListener('sync-sessions-updated', (event: any) => {
         console.log('🔄 Sessions updated from sync:', event.detail);
         setSyncStatus('connected');
-        // SessionManager will handle the update automatically
       });
 
       // Listen for messages updates  
       window.addEventListener('sync-messages-updated', (event: any) => {
         console.log('📨 Messages updated from sync:', event.detail);
-        // ChatInterface will handle the update automatically
       });
 
       // Listen for session changes
@@ -151,61 +151,63 @@ function App() {
       // Listen for conflicts
       window.addEventListener('sync-conflict-detected', (event: any) => {
         console.log('⚠️ Sync conflict detected:', event.detail);
-        // Could show conflict resolution UI here
       });
     };
 
-    setupSyncListeners();
-
-    // אתחול AuthService תחילה
     const initializeAuth = async () => {
+      if (!mounted) return;
       try {
         await AuthService.initializeGoogleAuth();
-        console.log('✅ Auth service initialized');
+        if (mounted) {
+          console.log('✅ Auth service initialized');
+          
+          const unsubscribe = AuthService.onAuthStateChanged(async (user: User | null) => {
+            if (!mounted) return;
+            
+            setUser(user);
+            
+            if (user) {
+              try {
+                // Initialize Real-Time Sync
+                console.log('🔄 Initializing real-time sync for user:', user.id);
+                SyncManager.initializeSync(user.id);
+                
+                // Get RealTimeSyncService instance (it will auto-initialize)
+                const syncService = RealTimeSyncService.getInstance();
+                
+                console.log('✅ Real-time sync initialized successfully!');
+                console.log('✅ All services ready for user:', user.email);
+              } catch (error) {
+                console.error('❌ Failed to initialize services:', error);
+                if (mounted) setAppError('שגיאה באתחול השירותים');
+              }
+            } else {
+              console.log('🧹 Cleaning up services for logged out user');
+              SyncManager.cleanup();
+              RealTimeSyncService.getInstance().cleanup();
+            }
+            
+            if (mounted) {
+              setLoading(false);
+              hideLoadingScreen();
+            }
+          });
+          
+          return () => unsubscribe?.();
+        }
       } catch (error) {
-        console.error('❌ Failed to initialize auth service:', error);
-        setAppError('שגיאה באתחול שירות האימות');
+        console.error('Auth initialization failed:', error);
       }
     };
+
+    // Setup listeners first
+    setupSyncListeners();
     
-    // הגדר listener לשינויי אימות
-    const unsubscribe = AuthService.onAuthStateChanged(async (user: User | null) => {
-      setUser(user);
-      
-      if (user) {
-        // אתחול השירותים החדשים
-        try {
-          // 🔥 Initialize Real-Time Sync - החיבור הקריטי!
-          console.log('🔄 Initializing real-time sync for user:', user.id);
-          SyncManager.initializeSync(user.id);
-          
-          // Initialize RealTimeSyncService
-          const syncService = RealTimeSyncService.getInstance();
-          await syncService.initialize(user.id);
-          
-          console.log('✅ Real-time sync initialized successfully!');
-          console.log('✅ All services ready for user:', user.email);
-        } catch (error) {
-          console.error('❌ Failed to initialize services:', error);
-          setAppError('שגיאה באתחול השירותים');
-        }
-      } else {
-        // ניקוי בעת יציאה
-        console.log('🧹 Cleaning up services for logged out user');
-        SyncManager.cleanup();
-        RealTimeSyncService.getInstance().cleanup();
-      }
-      
-      setLoading(false);
-      hideLoadingScreen();
-    });
-
-    // התחל את האתחול
+    // Then initialize auth
     initializeAuth();
-
-    // נקה את הlisteners כשהcomponent נמחק
-    return () => {
-      unsubscribe();
+    
+    return () => { 
+      mounted = false; 
     };
   }, []);
 
