@@ -9,7 +9,7 @@
  * - Security headers and CSP
  * - Session management and token validation
  * 
- * Version: 2.0 with CSP headers
+ * Version: 2.1 with CSP headers - added Firebase domains
  */
 
 export interface SecurityValidationResult {
@@ -309,7 +309,7 @@ class SecurityServiceClass {
       if (!document.querySelector('meta[http-equiv="Content-Security-Policy"]')) {
         const cspMeta = document.createElement('meta');
         cspMeta.httpEquiv = 'Content-Security-Policy';
-        cspMeta.content = "default-src 'self'; connect-src 'self' https://identitytoolkit.googleapis.com https://securetoken.googleapis.com https://oauth2.googleapis.com https://www.googleapis.com https://apis.google.com https://www.gstatic.com https://firestore.googleapis.com https://api.anthropic.com; frame-src 'self' https://accounts.google.com https://*.firebaseapp.com; script-src 'self' 'unsafe-inline' https://apis.google.com https://www.gstatic.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; img-src 'self' data: https:; font-src 'self' https://fonts.gstatic.com";
+        cspMeta.content = "default-src 'self'; connect-src 'self' https://identitytoolkit.googleapis.com https://securetoken.googleapis.com https://oauth2.googleapis.com https://www.googleapis.com https://apis.google.com https://www.gstatic.com https://firestore.googleapis.com https://api.anthropic.com https://accounts.google.com https://*.firebaseapp.com; frame-src 'self' https://accounts.google.com https://*.firebaseapp.com; script-src 'self' 'unsafe-inline' https://apis.google.com https://www.gstatic.com https://accounts.google.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; img-src 'self' data: https:; font-src 'self' https://fonts.gstatic.com";
         document.head.appendChild(cspMeta);
       }
     }
