@@ -8,6 +8,9 @@ require('dotenv').config();
 const app = express();
 const PORT = process.env.PORT || 4000;
 
+// Trust proxy settings for IP detection
+app.set('trust proxy', true);
+
 // Middleware - CORS Updated for port 3003
 app.use(cors({
   origin: [

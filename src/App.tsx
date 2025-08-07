@@ -20,6 +20,8 @@ import { User } from './types';
 import { AuthService } from './services/AuthService';
 import { EnhancedClaudeService } from './services/EnhancedClaudeService';
 import { SecurityManager } from './services/SecurityManager';
+import { SyncManager } from './services/SyncManager';
+import { RealTimeSyncService } from './services/RealTimeSyncService';
 import LoginScreen from './components/LoginScreen';
 import MainNavigation from './components/MainNavigation';
 import TaskList from './components/TaskList';
@@ -113,6 +115,7 @@ function App() {
   const [currentChatId, setCurrentChatId] = useState<string | null>(null);
   const [showSessionManager, setShowSessionManager] = useState(false);
   const [appError, setAppError] = useState<string | null>(null);
+  const [syncStatus, setSyncStatus] = useState<string>('disconnected');
   const { isOnline, isInstalled } = usePWA();
 
   useEffect(() => {
@@ -122,6 +125,37 @@ function App() {
     const hideLoadingScreen = () => {
       document.body.classList.add('app-loaded');
     };
+
+    // 🔥 Setup Real-Time Sync Event Listeners
+    const setupSyncListeners = () => {
+      // Listen for sessions updates
+      window.addEventListener('sync-sessions-updated', (event: any) => {
+        console.log('🔄 Sessions updated from sync:', event.detail);
+        setSyncStatus('connected');
+        // SessionManager will handle the update automatically
+      });
+
+      // Listen for messages updates  
+      window.addEventListener('sync-messages-updated', (event: any) => {
+        console.log('📨 Messages updated from sync:', event.detail);
+        // ChatInterface will handle the update automatically
+      });
+
+      // Listen for session changes
+      window.addEventListener('sync-session-changed', (event: any) => {
+        console.log('🎯 Active session changed:', event.detail);
+        const { sessionId } = event.detail;
+        setCurrentChatId(sessionId);
+      });
+
+      // Listen for conflicts
+      window.addEventListener('sync-conflict-detected', (event: any) => {
+        console.log('⚠️ Sync conflict detected:', event.detail);
+        // Could show conflict resolution UI here
+      });
+    };
+
+    setupSyncListeners();
 
     // אתחול AuthService תחילה
     const initializeAuth = async () => {
@@ -139,19 +173,27 @@ function App() {
       setUser(user);
       
       if (user) {
-        // אתחול השירותים החדשים (אם יש להם פונקציות initialize)
+        // אתחול השירותים החדשים
         try {
-          // await SecurityManager.initialize(user.id);
-          // await EnhancedClaudeService.initialize(user);
+          // 🔥 Initialize Real-Time Sync - החיבור הקריטי!
+          console.log('🔄 Initializing real-time sync for user:', user.id);
+          SyncManager.initializeSync(user.id);
+          
+          // Initialize RealTimeSyncService
+          const syncService = RealTimeSyncService.getInstance();
+          await syncService.initialize(user.id);
+          
+          console.log('✅ Real-time sync initialized successfully!');
           console.log('✅ All services ready for user:', user.email);
         } catch (error) {
           console.error('❌ Failed to initialize services:', error);
           setAppError('שגיאה באתחול השירותים');
         }
       } else {
-        // ניקוי בעת יציאה (אם יש להם פונקציות cleanup)
-        // SecurityManager.cleanup();
-        // EnhancedClaudeService.cleanup();
+        // ניקוי בעת יציאה
+        console.log('🧹 Cleaning up services for logged out user');
+        SyncManager.cleanup();
+        RealTimeSyncService.getInstance().cleanup();
       }
       
       setLoading(false);

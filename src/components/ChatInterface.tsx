@@ -154,30 +154,42 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
     initializeChat();
     setupEventListeners();
     
-    // Set up real-time message sync if sessionId exists
+    // 🔥 Set up real-time message sync - המחבר הקריטי!
     let messageUnsubscribe: (() => void) | undefined;
     
-    if (sessionId) {
-      const syncService = RealTimeSyncService.getInstance();
-      messageUnsubscribe = syncService.subscribeToMessages(sessionId, (updatedMessages) => {
-        // Convert ChatMessage to legacy Message format
-        const legacyMessages: Message[] = updatedMessages.map(msg => ({
-          id: msg.id,
-          text: msg.content,
-          sender: msg.sender as 'user' | 'ai',
-          timestamp: msg.timestamp,
-          status: 'sent'
-        }));
+    if (sessionId && user) {
+      console.log('🔄 Setting up real-time sync for session:', sessionId);
+      
+      try {
+        const syncService = RealTimeSyncService.getInstance();
+        messageUnsubscribe = syncService.subscribeToMessages(sessionId, (updatedMessages) => {
+          console.log('📨 Received real-time message update:', updatedMessages.length);
+          
+          // Convert ChatMessage to legacy Message format
+          const legacyMessages: Message[] = updatedMessages.map(msg => ({
+            id: msg.id,
+            text: msg.content,
+            sender: msg.sender as 'user' | 'ai',
+            timestamp: msg.timestamp,
+            status: 'sent'
+          }));
+          
+          setMessages(legacyMessages);
+          console.log('✅ Messages updated via real-time sync');
+        });
         
-        setMessages(legacyMessages);
-      });
+        console.log('✅ Real-time message sync initialized');
+      } catch (error) {
+        console.error('❌ Failed to setup real-time sync:', error);
+      }
     }
     
     return () => {
       cleanup();
       messageUnsubscribe?.();
+      console.log('🧹 ChatInterface cleanup completed');
     };
-  }, [sessionId]);
+  }, [sessionId, user]);
 
   /**
    * Legacy auth state listener

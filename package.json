@@ -41,7 +41,18 @@
     "type-check-watch": "npx tsc --noEmit --watch",
     "build-check": "npm run type-check && npm run build",
     "deploy-ready": "npm run type-check && npm run build && npm run test --watchAll=false",
-    "prepare": "husky"
+    "prepare": "husky",
+    "health-check": "node scripts/health-check.js",
+    "health-check:quick": "node scripts/quick-check.js",
+    "health-check:ci": "node scripts/ci-health-check.js",
+    "health-check:json": "node scripts/health-check.js --json",
+    "health-check:html": "node scripts/health-check.js --html",
+    "firebase-check": "node scripts/firebase-health.js",
+    "security-audit": "node scripts/security-audit.js",
+    "performance-check": "node scripts/performance-check.js",
+    "full-audit": "npm run firebase-check && npm run security-audit && npm run performance-check && npm run health-check",
+    "deploy-firebase-rules": "node scripts/deploy-firestore-rules.js",
+    "test-sync": "node scripts/test-sync-integration.js"
   },
   "eslintConfig": {
     "extends": [
@@ -51,7 +62,7 @@
   },
   "husky": {
     "hooks": {
-      "pre-commit": "npm run type-check"
+      "pre-commit": "npm run health-check:quick && npm run type-check"
     }
   },
   "browserslist": {

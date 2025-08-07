@@ -23,10 +23,18 @@ export class AuthService {
         console.log('🔄 Auth state changed:', firebaseUser ? `User: ${firebaseUser.email}` : 'No user');
         if (firebaseUser) {
           const taskflowUser: User = this.convertFirebaseUserToTaskflowUser(firebaseUser);
-          localStorage.setItem('taskflow-user', JSON.stringify(taskflowUser));
+          // שימוש בsessionStorage לטובת אבטחה מתקדמת
+          sessionStorage.setItem('taskflow-user', JSON.stringify(taskflowUser));
+          sessionStorage.setItem('taskflow-session', JSON.stringify({
+            timestamp: new Date().toISOString(),
+            userId: firebaseUser.uid,
+            loginMethod: 'firebase',
+            expiresAt: Date.now() + 3600000 // שעה
+          }));
           this.notifyListeners(taskflowUser);
         } else {
-          localStorage.removeItem('taskflow-user');
+          sessionStorage.removeItem('taskflow-user');
+          sessionStorage.removeItem('taskflow-session');
           this.notifyListeners(null);
         }
       });
@@ -90,7 +98,19 @@ export class AuthService {
 
   static getCurrentUser(): User | null {
     try {
-      const userStr = localStorage.getItem('taskflow-user');
+      // בדיקת תוקף הסשן
+      const sessionStr = sessionStorage.getItem('taskflow-session');
+      if (sessionStr) {
+        const session = JSON.parse(sessionStr);
+        if (Date.now() > session.expiresAt) {
+          console.log('🔒 Session expired, removing user data');
+          sessionStorage.removeItem('taskflow-user');
+          sessionStorage.removeItem('taskflow-session');
+          return null;
+        }
+      }
+      
+      const userStr = sessionStorage.getItem('taskflow-user');
       return userStr ? JSON.parse(userStr) : null;
     } catch (error) {
       console.error('Error getting current user:', error);
@@ -174,12 +194,85 @@ export class AuthService {
   static async signOut(): Promise<void> {
     try {
       await firebaseSignOut(auth);
+      // ניקוי כל נתוני הסשן והטוקנים
+      sessionStorage.removeItem('taskflow-user');
+      sessionStorage.removeItem('taskflow-session');
+      sessionStorage.removeItem('taskflow-access-token');
+      sessionStorage.removeItem('taskflow-refresh-token');
+      sessionStorage.removeItem('auth_token');
+      // ניקוי נתונים רגישים מlocalStorage אם קיימים
       localStorage.removeItem('taskflow-user');
       localStorage.removeItem('auth_token');
-      console.log('✅ Sign out successful');
+      localStorage.removeItem('taskflow-access-token');
+      localStorage.removeItem('taskflow-refresh-token');
+      console.log('✅ Sign out successful - all session data and tokens cleared');
     } catch (error) {
       console.error('❌ Sign out failed:', error);
       throw error;
+    }
+  }
+
+  // פונקציה חדשה לקבלת Access Token
+  static getAccessToken(): string | null {
+    return sessionStorage.getItem('taskflow-access-token');
+  }
+
+  // פונקציה חדשה לקבלת Refresh Token
+  static getRefreshToken(): string | null {
+    return sessionStorage.getItem('taskflow-refresh-token');
+  }
+
+  // פונקציה לבדיקת תוקף Token
+  static isTokenExpired(): boolean {
+    try {
+      const sessionStr = sessionStorage.getItem('taskflow-session');
+      if (!sessionStr) return true;
+      
+      const session = JSON.parse(sessionStr);
+      return Date.now() > new Date(session.expiresAt).getTime();
+    } catch {
+      return true;
+    }
+  }
+
+  // פונקציה לחידוש Token אוטומטי
+  static async refreshToken(): Promise<boolean> {
+    try {
+      const refreshToken = this.getRefreshToken();
+      if (!refreshToken) {
+        console.log('❌ No refresh token available');
+        return false;
+      }
+
+      const response = await fetch('http://localhost:4000/api/auth/refresh-token', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ refreshToken })
+      });
+
+      if (!response.ok) {
+        console.log('❌ Token refresh failed');
+        return false;
+      }
+
+      const data = await response.json();
+      
+      // עדכון Token חדש
+      sessionStorage.setItem('taskflow-access-token', data.accessToken);
+      
+      // עדכון זמן תוקף
+      const sessionStr = sessionStorage.getItem('taskflow-session');
+      if (sessionStr) {
+        const session = JSON.parse(sessionStr);
+        session.expiresAt = data.expiresAt;
+        sessionStorage.setItem('taskflow-session', JSON.stringify(session));
+      }
+
+      console.log('✅ Token refreshed successfully');
+      return true;
+    } catch (error) {
+      console.error('❌ Token refresh error:', error);
+      return false;
     }
   }
 }

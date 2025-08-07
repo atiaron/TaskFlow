@@ -102,7 +102,8 @@ class MemoryService {
     };
 
     this.preferences.set(`${userId}:${key}`, preference);
-    console.log(`💾 Saved preference: ${key} = ${value} (confidence: ${preference.confidence})`);
+    // 🔒 Security: Log preference save without exposing value
+    console.log(`💾 Saved preference: ${key} (confidence: ${preference.confidence})`);
     
     return preference;
   }

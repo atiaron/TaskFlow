@@ -46,7 +46,8 @@ export class TaskManagementTool implements Tool {
   ];
 
   async execute(params: any, context: ToolContext): Promise<ToolResult> {
-    console.log('🛠️ TaskManagementTool executing:', params);
+    console.log('🛠️ TaskManagementTool executing action:', params.action);
+    // 🔒 Security: Full params not logged to prevent data exposure
     
     try {
       switch (params.action) {
@@ -658,7 +659,8 @@ export class TaskFlowToolRegistry {
       throw new Error(`Tool not found: ${toolName}`);
     }
     
-    console.log(`🚀 Executing tool: ${toolName} with params:`, params);
+    console.log(`🚀 Executing tool: ${toolName}`);
+    // 🔒 Security: Params not logged to prevent exposure of sensitive data
     return await tool.execute(params, context);
   }
   

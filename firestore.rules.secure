@@ -1,0 +1,84 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // 🛡️ Tasks Collection - רק למשתמש המחובר
+    match /tasks/{taskId} {
+      allow read, write: if request.auth != null 
+        && request.auth.uid == resource.data.userId;
+      allow create: if request.auth != null 
+        && request.auth.uid == request.resource.data.userId
+        && validateTask(request.resource.data);
+    }
+    
+    // 🛡️ User Profiles + Sub-Collections
+    match /users/{userId} {
+      allow read, write: if request.auth != null 
+        && request.auth.uid == userId;
+      
+      // 💬 Chat Sessions Sub-Collection
+      match /chat_sessions/{sessionId} {
+        allow read, write: if request.auth != null 
+          && request.auth.uid == userId;
+        allow create: if request.auth != null 
+          && request.auth.uid == userId
+          && validateChatSession(request.resource.data);
+      }
+      
+      // 📨 Chat Messages Sub-Collection
+      match /chat_messages/{messageId} {
+        allow read, write: if request.auth != null 
+          && request.auth.uid == userId;
+        allow create: if request.auth != null 
+          && request.auth.uid == userId
+          && validateChatMessage(request.resource.data);
+      }
+    }
+    
+    // 🛡️ Legacy Chat Messages - רק למשתמש המחובר
+    match /chat_messages/{messageId} {
+      allow read, write: if request.auth != null 
+        && request.auth.uid == resource.data.userId;
+      allow create: if request.auth != null 
+        && request.auth.uid == request.resource.data.userId
+        && validateChatMessage(request.resource.data);
+    }
+  }
+  
+  // 📝 ולידציה למשימות
+  function validateTask(task) {
+    return task.keys().hasAll(['title', 'completed', 'createdAt', 'updatedAt', 'userId'])
+      && task.title is string
+      && task.title.size() > 0
+      && task.title.size() <= 200
+      && task.completed is bool
+      && task.userId is string
+      && task.createdAt is timestamp
+      && task.updatedAt is timestamp;
+  }
+  
+  // 🗂️ ולידציה לsessions
+  function validateChatSession(session) {
+    return session.keys().hasAll(['title', 'created_at', 'updated_at', 'status'])
+      && session.title is string
+      && session.title.size() > 0
+      && session.title.size() <= 100
+      && session.status in ['active', 'archived']
+      && session.created_at is timestamp
+      && session.updated_at is timestamp
+      && session.message_count is number
+      && session.message_count >= 0;
+  }
+  
+  // 💬 ולידציה להודעות צ'אט
+  function validateChatMessage(message) {
+    return message.keys().hasAll(['content', 'sender', 'timestamp'])
+      && message.content is string
+      && message.content.size() > 0
+      && message.content.size() <= 5000
+      && message.sender in ['user', 'ai', 'assistant']
+      && message.timestamp is timestamp
+      && (message.keys().hasAny(['session_id']) ? message.session_id is string : true)
+      && (message.keys().hasAny(['type']) ? message.type in ['text', 'task', 'suggestion'] : true);
+  }
+}

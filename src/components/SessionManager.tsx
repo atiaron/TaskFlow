@@ -324,7 +324,7 @@ const SessionManager: React.FC<SessionManagerProps> = ({
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
 
-  // Load sessions
+  // Load sessions with real-time sync support
   const loadSessions = useCallback(async () => {
     return PerformanceMonitor.time(
       'loadHistory',
@@ -337,9 +337,26 @@ const SessionManager: React.FC<SessionManagerProps> = ({
             return;
           }
 
-          // Get all sessions from Firebase via Claude service
-          const allSessions = await claudeService.getAllSessions();
-          setSessions(allSessions);
+          // 🔥 Try real-time sync first, fallback to direct loading
+          try {
+            const syncService = require('../services/RealTimeSyncService').RealTimeSyncService.getInstance();
+            
+            // Subscribe to real-time session updates
+            syncService.subscribeToSessions((updatedSessions: any[]) => {
+              console.log('🔄 SessionManager: Real-time sessions update received');
+              setSessions(updatedSessions);
+              setError(null);
+            });
+            
+            console.log('✅ SessionManager: Real-time sync active');
+          } catch (syncError) {
+            console.log('📦 Real-time sync not available, using direct loading');
+            
+            // Fallback to direct loading
+            const allSessions = await claudeService.getAllSessions();
+            setSessions(allSessions);
+          }
+          
           setError(null);
         } catch (err) {
           console.error('Error loading sessions:', err);

@@ -121,7 +121,8 @@ class SecurityServiceClass {
     // Check if limit exceeded
     if (record.count > config.maxRequests) {
       record.blockedUntil = now + config.blockDurationMs;
-      console.warn(`Rate limit exceeded for ${identifier}. Blocked until ${new Date(record.blockedUntil)}`);
+      console.warn(`Rate limit exceeded. Blocked until ${new Date(record.blockedUntil)}`);
+      // 🔒 Security: Identifier not logged to prevent data exposure
       return false;
     }
     
