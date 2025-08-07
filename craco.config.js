@@ -42,5 +42,41 @@ module.exports = {
   // ✅ TypeScript configuration מהיר
   typescript: {
     enableTypeChecking: false // בדוק טיפוסים בנפרד!
+  },
+
+  // 🚦 Dev Server Configuration - Proxy & CSP
+  devServer: {
+    // Proxy כל קריאה ל-/api אל הbackend המקומי
+    proxy: {
+      '/api': {
+        target: 'http://localhost:4000',
+        changeOrigin: true,
+        secure: false,
+        logLevel: 'debug'
+      }
+    },
+    
+    // Headers - CSP רופף רק בdev
+    headers: process.env.NODE_ENV === 'development' ? {
+      'Content-Security-Policy': [
+        "default-src 'self' http://localhost:4000 http://127.0.0.1:4000",
+        "script-src 'self' 'unsafe-inline' 'unsafe-eval' http://localhost:4000 https://accounts.google.com https://www.gstatic.com",
+        "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
+        "font-src 'self' https://fonts.gstatic.com",
+        "img-src 'self' data: blob: https:",
+        "connect-src 'self' http://localhost:4000 http://127.0.0.1:4000 ws://localhost:3000 wss://localhost:3000 https://accounts.google.com https://www.google.com",
+        "frame-ancestors 'none'",
+        "base-uri 'self'"
+      ].join('; '),
+      'X-Content-Type-Options': 'nosniff',
+      'X-Frame-Options': 'DENY',
+      'X-XSS-Protection': '1; mode=block'
+    } : {},
+    
+    // אפשרויות נוספות לdev
+    hot: true,
+    open: false, // לא לפתוח browser אוטומטית
+    compress: true,
+    historyApiFallback: true
   }
 };

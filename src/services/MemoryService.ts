@@ -3,7 +3,7 @@
  * מערכת זיכרון היררכית מתקדמת עם למידה אדפטיבית
  */
 import { Task, User, ChatMessage } from '../types';
-import { FirebaseService } from './FirebaseService';
+import { FirebaseService } from '../services';
 
 // Enhanced Memory Types
 export interface UserInteraction {

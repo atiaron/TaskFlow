@@ -19,7 +19,6 @@
 import { onSnapshot, doc, collection, query, where, orderBy, Unsubscribe } from 'firebase/firestore';
 import { db } from '../config/firebase';
 import { ChatSession, ChatMessage, Task } from '../types/index';
-import { AuthService } from './AuthService';
 import { PerformanceMonitor } from './PerformanceMonitor';
 
 interface SyncSubscription {
@@ -51,6 +50,9 @@ export class RealTimeSyncService {
   private messageListeners: Map<string, Set<(messages: ChatMessage[]) => void>> = new Map();
   private taskListeners: Set<(tasks: Task[]) => void> = new Set();
 
+  // getCurrentUser function injection
+  private getCurrentUser: (() => any) | null = null;
+
   private constructor() {
     this.initializeService();
   }
@@ -63,6 +65,13 @@ export class RealTimeSyncService {
       RealTimeSyncService.instance = new RealTimeSyncService();
     }
     return RealTimeSyncService.instance;
+  }
+
+  /**
+   * Set the getCurrentUser function (dependency injection)
+   */
+  public setGetCurrentUser(getCurrentUser: () => any): void {
+    this.getCurrentUser = getCurrentUser;
   }
 
   /**
@@ -84,7 +93,7 @@ export class RealTimeSyncService {
   public subscribeToSessions(
     callback: (sessions: ChatSession[]) => void
   ): () => void {
-    const user = AuthService.getCurrentUser();
+    const user = this.getCurrentUser?.();
     if (!user) {
       throw new Error('User not authenticated');
     }
@@ -173,7 +182,7 @@ export class RealTimeSyncService {
     sessionId: string,
     callback: (messages: ChatMessage[]) => void
   ): () => void {
-    const user = AuthService.getCurrentUser();
+    const user = this.getCurrentUser?.();
     if (!user) {
       throw new Error('User not authenticated');
     }
@@ -265,7 +274,7 @@ export class RealTimeSyncService {
   public subscribeToTasks(
     callback: (tasks: Task[]) => void
   ): () => void {
-    const user = AuthService.getCurrentUser();
+    const user = this.getCurrentUser?.();
     if (!user) {
       throw new Error('User not authenticated');
     }
@@ -411,7 +420,7 @@ export class RealTimeSyncService {
    */
   private monitorConnectionState(): void {
     // Monitor Firebase connection using a small document
-    const user = AuthService.getCurrentUser();
+    const user = this.getCurrentUser?.();
     if (!user) return;
 
     const connectionRef = doc(db, 'users', user.id);

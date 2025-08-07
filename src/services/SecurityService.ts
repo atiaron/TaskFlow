@@ -306,12 +306,49 @@ class SecurityServiceClass {
   // 🔒 Security Headers Setup
   private setupSecurityHeaders(): void {
     if (typeof document !== 'undefined') {
-      // Set CSP via meta tag if not already set
-      if (!document.querySelector('meta[http-equiv="Content-Security-Policy"]')) {
+      // Remove existing CSP if any
+      const existingCSP = document.querySelector('meta[http-equiv="Content-Security-Policy"]');
+      if (existingCSP) {
+        existingCSP.remove();
+      }
+      
+      // 🚦 Check environment using new env variables
+      const isDevelopment = process.env.NODE_ENV === 'development' || 
+                           process.env.REACT_APP_IS_DEV_MODE === 'true' ||
+                           window.location.hostname === 'localhost';
+      
+      const cspEnabled = process.env.REACT_APP_CSP_ENABLED !== 'false';
+      
+      console.log('🛡️ Security Service CSP Config:', { 
+        NODE_ENV: process.env.NODE_ENV,
+        IS_DEV_MODE: process.env.REACT_APP_IS_DEV_MODE,
+        CSP_ENABLED: process.env.REACT_APP_CSP_ENABLED,
+        isDevelopment, 
+        cspEnabled 
+      });
+      
+      if (isDevelopment || !cspEnabled) {
+        // Relaxed CSP for development or when explicitly disabled
+        const cspMeta = document.createElement('meta');
+        cspMeta.httpEquiv = 'Content-Security-Policy';
+        cspMeta.content = [
+          "default-src 'self' http://localhost:4000 http://127.0.0.1:4000 'unsafe-inline' 'unsafe-eval' data: blob:",
+          "connect-src 'self' http://localhost:4000 http://127.0.0.1:4000 ws://localhost:3000 wss://localhost:3000",
+          "script-src 'self' 'unsafe-inline' 'unsafe-eval' http://localhost:4000",
+          "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
+          "img-src 'self' data: blob: https:",
+          "font-src 'self' https://fonts.gstatic.com",
+          "frame-src 'self'"
+        ].join('; ');
+        document.head.appendChild(cspMeta);
+        console.log('🔓 CSP relaxed for development mode');
+      } else {
+        // Strict CSP for production
         const cspMeta = document.createElement('meta');
         cspMeta.httpEquiv = 'Content-Security-Policy';
         cspMeta.content = "default-src 'self'; connect-src 'self' https://identitytoolkit.googleapis.com https://securetoken.googleapis.com https://oauth2.googleapis.com https://www.googleapis.com https://apis.google.com https://www.gstatic.com https://firestore.googleapis.com https://api.anthropic.com https://accounts.google.com https://*.firebaseapp.com; frame-src 'self' https://accounts.google.com https://*.firebaseapp.com; script-src 'self' 'unsafe-inline' https://apis.google.com https://www.gstatic.com https://accounts.google.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; img-src 'self' data: https:; font-src 'self' https://fonts.gstatic.com";
         document.head.appendChild(cspMeta);
+        console.log('🔒 CSP enabled for production mode');
       }
     }
   }

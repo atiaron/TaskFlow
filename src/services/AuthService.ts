@@ -6,9 +6,16 @@ import { signInWithRedirect, getRedirectResult, GoogleAuthProvider, signOut as f
 export class AuthService {
   private static listeners: ((user: User | null) => void)[] = [];
   private static provider = new GoogleAuthProvider();
+  private static isInitialized = false;
 
   static async initializeGoogleAuth(): Promise<boolean> {
     console.log('🔍 AuthService.initializeGoogleAuth called (Firebase)');
+    
+    // Prevent multiple initializations
+    if (this.isInitialized) {
+      console.log('ℹ️ AuthService already initialized, skipping...');
+      return true;
+    }
     
     try {
       // Configure Google Auth Provider
@@ -18,7 +25,7 @@ export class AuthService {
       // Handle redirect result if user came back from Google OAuth
       await this.handleRedirectResult();
       
-      // Set up auth state listener
+      // Set up auth state listener (only once!)
       onAuthStateChanged(auth, (firebaseUser) => {
         console.log('🔄 Auth state changed:', firebaseUser ? `User: ${firebaseUser.email}` : 'No user');
         if (firebaseUser) {
@@ -39,6 +46,7 @@ export class AuthService {
         }
       });
 
+      this.isInitialized = true;
       console.log('✅ Firebase Auth is ready');
       return true;
     } catch (error) {
@@ -244,7 +252,11 @@ export class AuthService {
         return false;
       }
 
-      const response = await fetch('http://localhost:4000/api/auth/refresh-token', {
+      const apiUrl = process.env.NODE_ENV === 'development' 
+        ? 'http://localhost:4000' 
+        : (process.env.REACT_APP_API_URL || 'https://taskflow-backend.vercel.app');
+
+      const response = await fetch(`${apiUrl}/api/auth/refresh-token`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ refreshToken })

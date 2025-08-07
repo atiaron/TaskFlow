@@ -59,7 +59,7 @@ export type ChatSession = Chat & {
   messageCount: number;  // alias for message_count
   isStarred?: boolean;  // alias for is_starred (optional, like in Chat)
   userId: string;  // alias for user_id for session management (required)
-  context_summary: string;  // required by sessions.ts
+  context_summary?: string;  // optional instead of required
 };
 
 // ChatMessage is an alias for Message - used for compatibility
@@ -113,11 +113,23 @@ export interface Task {
   created_by_ai?: boolean;
   category?: string;
   tags?: string[];
+  // Additional fields for compatibility and extended functionality
+  completed?: boolean;
+  dueDate?: Date;
+  createdAt?: Date;
+  updatedAt?: Date;
+  estimatedTime?: number;
+  reminder_time?: Date;
+  isRecurring?: boolean;
+  subtasks?: string[];
+  permissions?: {
+    canEdit?: boolean;
+    canDelete?: boolean;
+    canShare?: boolean;
+  };
 }
 
 export type TaskStatus = 'pending' | 'in_progress' | 'completed' | 'cancelled';
-export type TaskPriority = 'low' | 'medium' | 'high' | 'urgent';
-
 export type TaskPriority = 'low' | 'medium' | 'high' | 'urgent';
 
 export type TaskCategory = 
@@ -711,10 +723,11 @@ export interface ReasoningStep {
 // AI Service Types
 export interface AIContext {
   currentTasks: Task[];
-  currentTime: string; // Changed from Date to string as per instructions
-  userPreferences: UserPreferences;
+  currentTime: string | Date; // Allow both for compatibility
+  userPreferences: UserPreferences | { userId: string; user: User }; // Allow both for compatibility
   conversationHistory?: Message[];
   recentActivity?: string[];
+  recentChats?: any[]; // For compatibility
 }
 
 // Enhanced AI Types
@@ -724,6 +737,9 @@ export interface EnhancedAIResponse {
   suggested_tasks?: Partial<Task>[];
   confidence: number;
   toolResults?: ToolResult[];
+  // Compatibility fields
+  response?: string;
+  reasoning?: ReasoningStep[];
 }
 
 export interface ToolResult {
@@ -731,6 +747,9 @@ export interface ToolResult {
   success: boolean;
   result: any;
   error?: string;
+  // Compatibility fields
+  type?: 'create' | 'update' | 'delete';
+  data?: any;
 }
 
 // Memory Types
@@ -738,6 +757,7 @@ export interface UserPreference {
   key: string;
   value: any;
   timestamp: Date;
+  confidence: number;
 }
 
 export type UserWithDetails = User & {

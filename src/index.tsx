@@ -8,9 +8,8 @@ const root = ReactDOM.createRoot(
 );
 
 root.render(
-  <React.StrictMode>
-    <App />
-  </React.StrictMode>
+  // הסרת StrictMode להימנע מהרצה כפולה בזמן פתרון הבעיה
+  <App />
 );
 
 console.log('Force redeploy 08/07/2025 07:20:00 - CSP fix verification');

@@ -1,5 +1,5 @@
 /* cspell:disable */
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { ThemeProvider, createTheme } from '@mui/material/styles';
 import { 
   CssBaseline, 
@@ -17,7 +17,7 @@ import {
   Warning as WarningIcon 
 } from '@mui/icons-material';
 import { User } from './types';
-import { AuthService } from './services/AuthService';
+import { AuthService } from './services'; // עודכן להשתמש בservice injector
 import { EnhancedClaudeService } from './services/EnhancedClaudeService';
 import { SecurityManager } from './services/SecurityManager';
 import { SyncManager } from './services/SyncManager';
@@ -117,8 +117,20 @@ function App() {
   const [appError, setAppError] = useState<string | null>(null);
   const [syncStatus, setSyncStatus] = useState<string>('disconnected');
   const { isOnline, isInstalled } = usePWA();
+  
+  // Ref למניעת הרצה כפולה ב-React StrictMode
+  const initRef = useRef(false);
 
   useEffect(() => {
+    // מניעת הרצה כפולה ב-React StrictMode
+    if (initRef.current) {
+      console.log('🔄 App already initialized, skipping duplicate initialization');
+      return;
+    }
+    initRef.current = true;
+    
+    let mounted = true;
+
     console.log('🚀 App starting - setting up auth listener and services');
     
     // הסתרת מסך הטעינה
@@ -128,84 +140,116 @@ function App() {
 
     // 🔥 Setup Real-Time Sync Event Listeners
     const setupSyncListeners = () => {
-      // Listen for sessions updates
-      window.addEventListener('sync-sessions-updated', (event: any) => {
+      const handleSessionsUpdate = (event: any) => {
         console.log('🔄 Sessions updated from sync:', event.detail);
-        setSyncStatus('connected');
-        // SessionManager will handle the update automatically
-      });
+        if (mounted) setSyncStatus('connected');
+      };
 
-      // Listen for messages updates  
-      window.addEventListener('sync-messages-updated', (event: any) => {
+      const handleMessagesUpdate = (event: any) => {
         console.log('📨 Messages updated from sync:', event.detail);
-        // ChatInterface will handle the update automatically
-      });
+      };
 
-      // Listen for session changes
-      window.addEventListener('sync-session-changed', (event: any) => {
+      const handleSessionChange = (event: any) => {
         console.log('🎯 Active session changed:', event.detail);
         const { sessionId } = event.detail;
-        setCurrentChatId(sessionId);
-      });
+        if (mounted) setCurrentChatId(sessionId);
+      };
 
-      // Listen for conflicts
-      window.addEventListener('sync-conflict-detected', (event: any) => {
+      const handleConflict = (event: any) => {
         console.log('⚠️ Sync conflict detected:', event.detail);
-        // Could show conflict resolution UI here
-      });
+      };
+
+      // Add listeners
+      window.addEventListener('sync-sessions-updated', handleSessionsUpdate);
+      window.addEventListener('sync-messages-updated', handleMessagesUpdate);
+      window.addEventListener('sync-session-changed', handleSessionChange);
+      window.addEventListener('sync-conflict-detected', handleConflict);
+
+      // Return cleanup function
+      return () => {
+        window.removeEventListener('sync-sessions-updated', handleSessionsUpdate);
+        window.removeEventListener('sync-messages-updated', handleMessagesUpdate);
+        window.removeEventListener('sync-session-changed', handleSessionChange);
+        window.removeEventListener('sync-conflict-detected', handleConflict);
+      };
     };
 
-    setupSyncListeners();
-
-    // אתחול AuthService תחילה
     const initializeAuth = async () => {
+      if (!mounted) return;
       try {
+        console.log('🔍 Initializing auth service...');
         await AuthService.initializeGoogleAuth();
-        console.log('✅ Auth service initialized');
+        if (mounted) {
+          console.log('✅ Auth service initialized');
+          
+          const unsubscribe = AuthService.onAuthStateChanged(async (user: User | null) => {
+            if (!mounted) return;
+            
+            setUser(user);
+            
+            if (user) {
+              try {
+                // Initialize Real-Time Sync only in production
+                const isDev = process.env.NODE_ENV === 'development' ||
+                             process.env.REACT_APP_IS_DEV_MODE === 'true' ||
+                             window.location.hostname === 'localhost';
+                
+                if (!isDev) {
+                  console.log('🔄 Initializing real-time sync for user:', user.id);
+                  SyncManager.initializeSync(user.id);
+                  
+                  // Get RealTimeSyncService instance and inject getCurrentUser
+                  const syncService = RealTimeSyncService.getInstance();
+                  syncService.setGetCurrentUser(() => AuthService.getCurrentUser());
+                  console.log('✅ Real-time sync initialized successfully!');
+                } else {
+                  console.log('🔧 Development mode - setting up mock sync');
+                  // Even in dev mode, inject getCurrentUser for potential sync operations
+                  const syncService = RealTimeSyncService.getInstance();
+                  syncService.setGetCurrentUser(() => AuthService.getCurrentUser());
+                }
+                
+                console.log('✅ All services ready for user:', user.email || user.id);
+              } catch (error) {
+                console.error('❌ Failed to initialize services:', error);
+                if (mounted) setAppError('שגיאה באתחול השירותים');
+              }
+            } else {
+              console.log('🧹 Cleaning up services for logged out user');
+              SyncManager.cleanup();
+              RealTimeSyncService.getInstance().cleanup();
+            }
+            
+            if (mounted) {
+              setLoading(false);
+              hideLoadingScreen();
+            }
+          });
+          
+          return () => unsubscribe?.();
+        }
       } catch (error) {
-        console.error('❌ Failed to initialize auth service:', error);
-        setAppError('שגיאה באתחול שירות האימות');
+        console.error('Auth initialization failed:', error);
+        if (mounted) {
+          setLoading(false);
+          hideLoadingScreen();
+        }
       }
     };
+
+    // Setup listeners first
+    const cleanupListeners = setupSyncListeners();
     
-    // הגדר listener לשינויי אימות
-    const unsubscribe = AuthService.onAuthStateChanged(async (user: User | null) => {
-      setUser(user);
-      
-      if (user) {
-        // אתחול השירותים החדשים
-        try {
-          // 🔥 Initialize Real-Time Sync - החיבור הקריטי!
-          console.log('🔄 Initializing real-time sync for user:', user.id);
-          SyncManager.initializeSync(user.id);
-          
-          // Initialize RealTimeSyncService
-          const syncService = RealTimeSyncService.getInstance();
-          await syncService.initialize(user.id);
-          
-          console.log('✅ Real-time sync initialized successfully!');
-          console.log('✅ All services ready for user:', user.email);
-        } catch (error) {
-          console.error('❌ Failed to initialize services:', error);
-          setAppError('שגיאה באתחול השירותים');
-        }
-      } else {
-        // ניקוי בעת יציאה
-        console.log('🧹 Cleaning up services for logged out user');
-        SyncManager.cleanup();
-        RealTimeSyncService.getInstance().cleanup();
-      }
-      
-      setLoading(false);
-      hideLoadingScreen();
+    // Then initialize auth
+    let authCleanup: (() => void) | undefined;
+    initializeAuth().then(cleanup => {
+      authCleanup = cleanup;
     });
-
-    // התחל את האתחול
-    initializeAuth();
-
-    // נקה את הlisteners כשהcomponent נמחק
-    return () => {
-      unsubscribe();
+    
+    return () => { 
+      mounted = false;
+      cleanupListeners?.();
+      authCleanup?.();
     };
   }, []);
 

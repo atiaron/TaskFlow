@@ -20,7 +20,7 @@ import {
   Today as TodayIcon,
   Warning as OverdueIcon
 } from '@mui/icons-material';
-import { FirebaseService } from '../services/FirebaseService';
+import { RealTimeSyncService } from '../services/RealTimeSyncService';
 import { Task, User } from '../types';
 
 interface QuickStatsProps {
@@ -56,9 +56,13 @@ const QuickStats: React.FC<QuickStatsProps> = ({ user, isCompact = false }) => {
 
     setLoading(true);
 
-    // Real-time listener לעדכון סטטיסטיקות בזמן אמת
-    const unsubscribe = FirebaseService.subscribeToUserTasks(user.id, (tasks: Task[]) => {
+    // 🔧 FIX: Use shared RealTimeSyncService instead of creating duplicate Firebase listener
+    // This prevents infinite Firebase loops by reusing the existing subscription
+    console.log('📊 QuickStats: Setting up real-time stats using shared sync service');
+    const syncService = RealTimeSyncService.getInstance();
+    const unsubscribe = syncService.subscribeToTasks((tasks: Task[]) => {
       try {
+        console.log(`📊 QuickStats: Processing ${tasks.length} tasks for stats`);
         const now = new Date();
         const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
         const tomorrow = new Date(today);
@@ -66,7 +70,7 @@ const QuickStats: React.FC<QuickStatsProps> = ({ user, isCompact = false }) => {
 
         const completed = tasks.filter((t: Task) => t.completed);
         const pending = tasks.filter((t: Task) => !t.completed);
-        
+
         const todayTasks = tasks.filter((t: Task) => {
           if (!t.dueDate) return false;
           const dueDate = new Date(t.dueDate);
@@ -95,7 +99,7 @@ const QuickStats: React.FC<QuickStatsProps> = ({ user, isCompact = false }) => {
           completionRate,
           todayCompleted: todayCompleted.length
         });
-        
+
         setLoading(false);
       } catch (error) {
         console.error('❌ Error processing stats:', error);
@@ -105,6 +109,7 @@ const QuickStats: React.FC<QuickStatsProps> = ({ user, isCompact = false }) => {
 
     // Cleanup function
     return () => {
+      console.log('🧹 QuickStats: Cleaning up real-time stats subscription');
       unsubscribe();
     };
   }, [user.id]);
@@ -180,7 +185,7 @@ const QuickStats: React.FC<QuickStatsProps> = ({ user, isCompact = false }) => {
             סיכום משימות
           </Typography>
         </Box>
-        
+
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
           <Chip
             label={`${Math.round(stats.completionRate)}%`}
@@ -191,7 +196,7 @@ const QuickStats: React.FC<QuickStatsProps> = ({ user, isCompact = false }) => {
               fontWeight: 600
             }}
           />
-          
+
           {isCompact && (
             <Tooltip title={expanded ? 'צמצם' : 'הרחב'}>
               <IconButton

@@ -107,8 +107,8 @@ interface ConflictResolution {
   resolvedTask?: Task;
 }
 
-const TaskList: React.FC<TaskListProps> = ({ 
-  user, 
+const TaskList: React.FC<TaskListProps> = ({
+  user,
   onTasksUpdate,
   onTaskCreated,
   className,
@@ -121,14 +121,14 @@ const TaskList: React.FC<TaskListProps> = ({
   const [tasks, setTasks] = useState<Task[]>([]);
   const [filteredTasks, setFilteredTasks] = useState<Task[]>([]);
   const [loadingState, setLoadingState] = useState<LoadingState>({ status: 'idle' });
-  
+
   // Enhanced filters and search
   const [searchQuery, setSearchQuery] = useState('');
   const [filter, setFilter] = useState<'all' | 'pending' | 'completed' | 'today' | 'overdue'>('all');
   const [priorityFilter, setPriorityFilter] = useState<TaskPriority | 'all'>('all');
   const [categoryFilter, setCategoryFilter] = useState<TaskCategory | 'all'>('all');
   const [sortBy, setSortBy] = useState<'created_at' | 'due_date' | 'priority' | 'title'>('created_at');
-  
+
   // Dialog and interaction state
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const [selectedTask, setSelectedTask] = useState<Task | null>(null);
@@ -137,7 +137,7 @@ const TaskList: React.FC<TaskListProps> = ({
   const [createTaskDialogOpen, setCreateTaskDialogOpen] = useState(false);
   const [focusModeOpen, setFocusModeOpen] = useState(false);
   const [focusTask, setFocusTask] = useState<Task | null>(null);
-  
+
   // AI and smart features
   const [aiSuggestion, setAiSuggestion] = useState<TaskCreationSuggestion | null>(null);
   const [aiSuggestionsOpen, setAiSuggestionsOpen] = useState(false);
@@ -145,20 +145,20 @@ const TaskList: React.FC<TaskListProps> = ({
   const [pendingConflicts, setPendingConflicts] = useState<ConflictResolution[]>([]);
   const [syncStatus, setSyncStatus] = useState<'online' | 'offline' | 'syncing' | 'error'>('online');
   const [offlineQueue, setOfflineQueue] = useState<any[]>([]);
-  
+
   // Form state for task creation/editing
   const [newTaskTitle, setNewTaskTitle] = useState('');
   const [newTaskDescription, setNewTaskDescription] = useState('');
   const [newTaskPriority, setNewTaskPriority] = useState<TaskPriority>('medium');
   const [newTaskCategory, setNewTaskCategory] = useState<TaskCategory>('personal');
   const [newTaskDueDate, setNewTaskDueDate] = useState<string>('');
-  
+
   // Services
   const claudeService = useRef(EnhancedClaudeService.getInstance());
   const securityManager = useRef(SecurityManager.getInstance());
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
-  
+
   // השתמש במערכת ההודעות החכמה
   const {
     notifications,
@@ -171,35 +171,15 @@ const TaskList: React.FC<TaskListProps> = ({
     showTip
   } = useSmartNotifications();
 
-  // Progressive loading of tasks
+  // 🚨 DEPRECATED: Manual task loading - removed to prevent Firebase infinite loops
+  // Now using only real-time sync via RealTimeSyncService.subscribeToTasks()
+  // This was causing infinite Firebase calls when combined with real-time listeners
+  /*
   const loadTasks = useCallback(async () => {
-    try {
-      setLoadingState({ status: 'loading', message: 'טוען משימות...', progress: 0 });
-      
-      // Phase 1: Load essential tasks (instant)
-      setLoadingState({ status: 'phase1', message: 'טוען משימות עיקריות...', progress: 25 });
-      const essentialTasks = await FirebaseService.getTasks(user.id);
-      setTasks(essentialTasks);
-      setLoadingState({ status: 'phase1', message: 'טעינה מהירה הושלמה', progress: 50 });
-      
-      // Complete loading
-      setTimeout(() => {
-        setLoadingState({ status: 'complete', progress: 100 });
-        setTimeout(() => setLoadingState({ status: 'idle' }), 1000);
-      }, 500);
-      
-    } catch (error) {
-      console.error('Failed to load tasks:', error);
-      setLoadingState({ status: 'error', message: 'שגיאה בטעינת משימות' });
-      
-      // Fallback to cached tasks
-      const cachedTasks = localStorage.getItem(`tasks_${user.id}`);
-      if (cachedTasks) {
-        setTasks(JSON.parse(cachedTasks));
-        showAIInsight('טוען משימות מהמטמון המקומי', 'info');
-      }
-    }
+    // REMOVED: This was causing infinite Firebase queries
+    // Real-time sync handles all task loading automatically
   }, [user.id, showAIInsight]);
+  */
 
   // Smart filtering and search
   useEffect(() => {
@@ -228,7 +208,7 @@ const TaskList: React.FC<TaskListProps> = ({
         today.setHours(0, 0, 0, 0);
         const tomorrow = new Date(today);
         tomorrow.setDate(tomorrow.getDate() + 1);
-        filtered = filtered.filter(task => 
+        filtered = filtered.filter(task =>
           task.dueDate &&
           new Date(task.dueDate) >= today &&
           new Date(task.dueDate) < tomorrow
@@ -236,7 +216,7 @@ const TaskList: React.FC<TaskListProps> = ({
         break;
       case 'overdue':
         const now = new Date();
-        filtered = filtered.filter(task => 
+        filtered = filtered.filter(task =>
           task.dueDate &&
           new Date(task.dueDate) < now &&
           !task.completed
@@ -251,7 +231,7 @@ const TaskList: React.FC<TaskListProps> = ({
 
     // Filter by category
     if (categoryFilter !== 'all') {
-        filtered = filtered.filter(task => (task as any).category === categoryFilter);
+      filtered = filtered.filter(task => (task as any).category === categoryFilter);
     }
 
     // Sort tasks
@@ -281,21 +261,28 @@ const TaskList: React.FC<TaskListProps> = ({
     setFilteredTasks(filtered);
   }, [tasks, searchQuery, filter, priorityFilter, categoryFilter, sortBy, maxItems]);
 
-  // Load tasks on mount and user change
+  // Real-time tasks sync - ONLY this should be used
   useEffect(() => {
-    loadTasks();
-  }, [loadTasks]);
+    console.log('🔧 TaskList: Setting up real-time tasks subscription');
+    setLoadingState({ status: 'loading', message: 'מאתחל האזנה בזמן אמת...', progress: 25 });
 
-  // Real-time tasks sync
-  useEffect(() => {
     const syncService = RealTimeSyncService.getInstance();
-    
+
     const unsubscribe = syncService.subscribeToTasks((updatedTasks) => {
+      console.log(`📝 TaskList: Received ${updatedTasks.length} tasks from real-time sync`);
       setTasks(updatedTasks);
+      setLoadingState({ status: 'complete', progress: 100 });
+
+      // Set to idle after a short delay
+      setTimeout(() => setLoadingState({ status: 'idle' }), 1000);
+
       onTasksUpdate?.();
     });
 
-    return unsubscribe;
+    return () => {
+      console.log('🧹 TaskList: Cleaning up real-time tasks subscription');
+      unsubscribe();
+    };
   }, [onTasksUpdate]);
 
   // AI-powered task creation detection
@@ -308,9 +295,9 @@ const TaskList: React.FC<TaskListProps> = ({
       // Use SecurityManager to scan for sensitive information
       const securityScan = await securityManager.current.scanMessage(userInput);
       if (securityScan.has_sensitive_data) {
-        return { 
-          confidence: 0, 
-          action: 'none', 
+        return {
+          confidence: 0,
+          action: 'none',
           reasoning: 'Sensitive data detected, not creating task',
           userMessage: userInput
         };
@@ -319,9 +306,9 @@ const TaskList: React.FC<TaskListProps> = ({
       // Simple rule-based detection (future: integrate with Claude API)
       const createKeywords = ['צור משימה', 'תוסיף משימה', 'רשום לי', 'תזכור לי'];
       const remindKeywords = ['תזכיר לי', 'צריך לעשות', 'אל תשכח'];
-      
+
       const input = userInput.toLowerCase();
-      
+
       // High confidence patterns
       if (createKeywords.some(keyword => input.includes(keyword))) {
         const taskTitle = userInput.replace(/צור משימה|תוסיף משימה|רשום לי/g, '').trim();
@@ -361,7 +348,7 @@ const TaskList: React.FC<TaskListProps> = ({
       }
 
       return { confidence: 0, action: 'none', reasoning: 'לא זוהתה כוונה ליצירת משימה', userMessage: userInput };
-      
+
     } catch (error) {
       console.error('Error detecting task creation intent:', error);
       return { confidence: 0, action: 'none', reasoning: 'שגיאה בזיהוי כוונות', userMessage: userInput };
@@ -371,7 +358,7 @@ const TaskList: React.FC<TaskListProps> = ({
   // Smart task creation handler
   const handleSmartTaskCreation = useCallback(async (userInput: string) => {
     const suggestion = await detectTaskCreationIntent(userInput);
-    
+
     if (suggestion.action === 'create_automatic' && suggestion.suggestedTask) {
       // Auto-create task
       await handleCreateTask(suggestion.suggestedTask);
@@ -386,7 +373,7 @@ const TaskList: React.FC<TaskListProps> = ({
   // Handle AI suggestion response
   const handleAISuggestionResponse = useCallback(async (accept: boolean) => {
     if (!aiSuggestion || !aiSuggestion.suggestedTask) return;
-    
+
     if (accept) {
       await handleCreateTask(aiSuggestion.suggestedTask);
       showSuccess('✅ משימה נוצרה', `"${aiSuggestion.suggestedTask.title}"`);
@@ -396,7 +383,7 @@ const TaskList: React.FC<TaskListProps> = ({
     } else {
       showAIInsight('בסדר, לא יוצר משימה', 'תמיד אפשר ליצור משימה ידנית');
     }
-    
+
     setAiSuggestion(null);
   }, [aiSuggestion, onTaskCreated, showSuccess, showAIInsight]);
 
@@ -404,10 +391,10 @@ const TaskList: React.FC<TaskListProps> = ({
   useEffect(() => {
     const handleOnline = () => setSyncStatus('online');
     const handleOffline = () => setSyncStatus('offline');
-    
+
     window.addEventListener('online', handleOnline);
     window.addEventListener('offline', handleOffline);
-    
+
     return () => {
       window.removeEventListener('online', handleOnline);
       window.removeEventListener('offline', handleOffline);
@@ -421,21 +408,21 @@ const TaskList: React.FC<TaskListProps> = ({
         completed: !task.completed,
         updatedAt: new Date()
       };
-      
+
       await FirebaseService.updateTask(user.id, task.id!, updatedTask);
       setTasks(tasks.map(t => t.id === task.id ? updatedTask : t));
-      
+
       // הצגת הודעות חכמות
       if (updatedTask.completed) {
         showSuccess('כל הכבוד! 🎉', `השלמת את "${task.title}"`);
-        
+
         // בדוק הישגים
-        const completedToday = tasks.filter(t => 
-          t.completed && 
-          t.updatedAt && 
+        const completedToday = tasks.filter(t =>
+          t.completed &&
+          t.updatedAt &&
           new Date(t.updatedAt).toDateString() === new Date().toDateString()
         ).length + 1;
-        
+
         if (completedToday === 1) {
           showTip('התחלה מעולה!', 'המשימה הראשונה היום הושלמה!');
         } else if (completedToday === 5) {
@@ -443,11 +430,11 @@ const TaskList: React.FC<TaskListProps> = ({
         } else if (completedToday === 10) {
           showCelebration('מדהים! 🚀', 'השלמת 10 משימות ביום אחד!');
         }
-        
+
         // בדוק רצף ימים
         checkStreak();
       }
-      
+
       onTasksUpdate?.();
     } catch (error) {
       console.error('Failed to update task:', error);
@@ -458,13 +445,13 @@ const TaskList: React.FC<TaskListProps> = ({
     // חישוב רצף פשוט - ניתן לשפר
     const yesterday = new Date();
     yesterday.setDate(yesterday.getDate() - 1);
-    
-    const yesterdayTasks = tasks.filter(t => 
-      t.completed && 
-      t.updatedAt && 
+
+    const yesterdayTasks = tasks.filter(t =>
+      t.completed &&
+      t.updatedAt &&
       new Date(t.updatedAt).toDateString() === yesterday.toDateString()
     );
-    
+
     if (yesterdayTasks.length > 0) {
       showStreak('רצף נמשך! 🔥', 'המשכת את הרצף שלך!', 2);
     }
@@ -501,9 +488,9 @@ const TaskList: React.FC<TaskListProps> = ({
     total: tasks.length,
     completed: tasks.filter(t => t.completed).length,
     pending: tasks.filter(t => !t.completed).length,
-    todayCompleted: tasks.filter(t => 
-      t.completed && 
-      t.updatedAt && 
+    todayCompleted: tasks.filter(t =>
+      t.completed &&
+      t.updatedAt &&
       new Date(t.updatedAt).toDateString() === new Date().toDateString()
     ).length
   };
@@ -512,12 +499,12 @@ const TaskList: React.FC<TaskListProps> = ({
     setAiSuggestionsOpen(true);
     const pendingTasks = tasks.filter(t => !t.completed);
     const context = `יש לי ${pendingTasks.length} משימות ממתינות. אני צריך עזרה בתכנון היום.`;
-    
+
     // const suggestions = await EnhancedClaudeService.generateTaskSuggestions(context);
     const suggestions: TaskCreationSuggestion[] = [];
     // TODO: Implement AI task suggestions
     setSuggestions(suggestions);
-    
+
     showAIInsight(
       'הצעות חכמות מוכנות!',
       `יצרתי ${suggestions.length} הצעות בהתבסס על המשימות שלך`,
@@ -528,10 +515,10 @@ const TaskList: React.FC<TaskListProps> = ({
 
   const handleCreateTask = useCallback(async (taskData: Partial<Task>) => {
     let newTask: Partial<Task> | null = null;
-    
+
     try {
       setSyncStatus('syncing');
-      
+
       newTask = {
         id: `task_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
         title: taskData.title || 'משימה חדשה',
@@ -553,25 +540,25 @@ const TaskList: React.FC<TaskListProps> = ({
       // Optimistic update
       const tempTask = newTask as Task;
       setTasks(prev => [tempTask, ...prev]);
-      
+
       try {
         // Attempt to save to database
         await FirebaseService.addTask(user.id, newTask as Omit<Task, 'id'>);
         setSyncStatus('online');
-        
+
         // Reload tasks to get server-assigned ID
         setTimeout(() => loadTasks(), 500);
-        
+
         showSuccess('נוצרה בהצלחה!', `המשימה "${newTask?.title}" נוספה למערכת`);
-        
+
         if (onTaskCreated) {
           onTaskCreated(tempTask);
         }
-        
+
         if (onTasksUpdate) {
           onTasksUpdate();
         }
-        
+
       } catch (error) {
         // Network error - add to offline queue
         console.error('Failed to sync task to server:', error);
@@ -579,7 +566,7 @@ const TaskList: React.FC<TaskListProps> = ({
         setSyncStatus('offline');
         showAIInsight('שמור במטמון', 'המשימה תישמר כשהחיבור יחזור');
       }
-      
+
     } catch (error) {
       console.error('Failed to create task:', error);
       setSyncStatus('error');
@@ -611,12 +598,12 @@ const TaskList: React.FC<TaskListProps> = ({
 
   const handleAIAnalysis = () => {
     const pendingTasks = tasks.filter(t => !t.completed).length;
-    const completedToday = tasks.filter(t => 
-      t.completed && 
-      t.updatedAt && 
+    const completedToday = tasks.filter(t =>
+      t.completed &&
+      t.updatedAt &&
       new Date(t.updatedAt).toDateString() === new Date().toDateString()
     ).length;
-    
+
     showAIInsight(
       'ניתוח תפוקה',
       `היום השלמת ${completedToday} משימות. נותרו ${pendingTasks} משימות ממתינות.`,
@@ -636,7 +623,7 @@ const TaskList: React.FC<TaskListProps> = ({
   return (
     <Container maxWidth="md" sx={{ py: 2, pb: 10, px: { xs: 2, sm: 3 } }}>
       {/* מערכת הודעות חכמה */}
-      <SmartNotificationSystem 
+      <SmartNotificationSystem
         notifications={notifications}
         onDismiss={removeNotification}
       />
@@ -650,9 +637,9 @@ const TaskList: React.FC<TaskListProps> = ({
       {/* כותרת עם משתמש מחובר */}
       <Box sx={{ mb: 4 }}>
         {/* חיווי משתמש וכפתור התנתקות */}
-        <Box sx={{ 
-          display: 'flex', 
-          justifyContent: 'space-between', 
+        <Box sx={{
+          display: 'flex',
+          justifyContent: 'space-between',
           alignItems: 'center',
           mb: 3,
           p: 2,
@@ -662,8 +649,8 @@ const TaskList: React.FC<TaskListProps> = ({
           borderColor: 'primary.200'
         }}>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-            <Avatar 
-              src={user.photoURL || ''} 
+            <Avatar
+              src={user.photoURL || ''}
               alt={user.displayName || user.email}
               sx={{ width: 40, height: 40 }}
             >
@@ -678,7 +665,7 @@ const TaskList: React.FC<TaskListProps> = ({
               </Typography>
             </Box>
           </Box>
-          
+
           <Button
             variant="outlined"
             color="error"
@@ -703,9 +690,9 @@ const TaskList: React.FC<TaskListProps> = ({
 
         {/* כותרת המשימות */}
         <Box sx={{ textAlign: 'center' }}>
-          <Typography 
-            variant="h4" 
-            sx={{ 
+          <Typography
+            variant="h4"
+            sx={{
               fontWeight: 700,
               color: 'text.primary',
               mb: 1,
@@ -714,10 +701,10 @@ const TaskList: React.FC<TaskListProps> = ({
           >
             המשימות שלי
           </Typography>
-          
+
           <Typography variant="body1" color="text.secondary">
-            {stats.pending > 0 
-              ? `${stats.pending} משימות ממתינות` 
+            {stats.pending > 0
+              ? `${stats.pending} משימות ממתינות`
               : 'כל המשימות הושלמו! 🎉'
             }
           </Typography>
@@ -725,10 +712,10 @@ const TaskList: React.FC<TaskListProps> = ({
       </Box>
 
       {/* פילטרים אלגנטיים */}
-      <Box sx={{ 
-        display: 'flex', 
-        gap: 1, 
-        mb: 3, 
+      <Box sx={{
+        display: 'flex',
+        gap: 1,
+        mb: 3,
         justifyContent: 'center',
         flexWrap: 'wrap'
       }}>
@@ -761,24 +748,24 @@ const TaskList: React.FC<TaskListProps> = ({
         {filteredTasks.length === 0 ? (
           <EmptyState
             title={filter === 'all' ? '🎯 בואו נתחיל!' : 'אין משימות בקטגוריה זו'}
-            description={filter === 'all' 
+            description={filter === 'all'
               ? 'צור את המשימה הראשונה שלך והתחל להיות פרודוקטיבי'
               : 'נסה לבחור קטגוריה אחרת או צור משימה חדשה'
             }
             actionText={filter === 'all' ? 'צור משימה ראשונה' : undefined}
             onAction={filter === 'all' ? () => handleCreateTask({}) : undefined}
-            icon={filter === 'all' ? 
-              <AddIcon sx={{ fontSize: 64, color: 'primary.light', opacity: 0.6 }} /> : 
+            icon={filter === 'all' ?
+              <AddIcon sx={{ fontSize: 64, color: 'primary.light', opacity: 0.6 }} /> :
               undefined
             }
           />
         ) : (
           <AnimatedList>
             {filteredTasks.map((task) => (
-              <Paper 
-                key={task.id} 
+              <Paper
+                key={task.id}
                 className="task-item"
-                sx={{ 
+                sx={{
                   p: 0,
                   overflow: 'hidden',
                   transition: 'all 0.2s ease',
@@ -792,9 +779,9 @@ const TaskList: React.FC<TaskListProps> = ({
               >
                 <Box sx={{ p: 3, display: 'flex', alignItems: 'flex-start', gap: 2 }}>
                   {/* Checkbox אלגנטי */}
-                  <IconButton 
+                  <IconButton
                     onClick={() => toggleTaskComplete(task)}
-                    sx={{ 
+                    sx={{
                       mt: -0.5,
                       p: 0.5,
                       '&:hover': {
@@ -803,17 +790,17 @@ const TaskList: React.FC<TaskListProps> = ({
                       }
                     }}
                   >
-                    {task.completed ? 
-                      <CompleteIcon sx={{ color: 'success.main', fontSize: 24 }} /> : 
+                    {task.completed ?
+                      <CompleteIcon sx={{ color: 'success.main', fontSize: 24 }} /> :
                       <IncompleteIcon sx={{ color: 'action.disabled', fontSize: 24 }} />
                     }
                   </IconButton>
 
                   {/* תוכן המשימה */}
                   <Box sx={{ flexGrow: 1, minWidth: 0 }}>
-                    <Typography 
-                      variant="h6" 
-                      sx={{ 
+                    <Typography
+                      variant="h6"
+                      sx={{
                         textDecoration: task.completed ? 'line-through' : 'none',
                         color: task.completed ? 'text.secondary' : 'text.primary',
                         fontWeight: 500,
@@ -824,12 +811,12 @@ const TaskList: React.FC<TaskListProps> = ({
                     >
                       {task.title}
                     </Typography>
-                    
+
                     {task.description && (
-                      <Typography 
-                        variant="body2" 
-                        color="text.secondary" 
-                        sx={{ 
+                      <Typography
+                        variant="body2"
+                        color="text.secondary"
+                        sx={{
                           mb: 1.5,
                           lineHeight: 1.5,
                           overflow: 'hidden',
@@ -843,20 +830,20 @@ const TaskList: React.FC<TaskListProps> = ({
                     )}
 
                     {/* מטא-דאטה נקייה */}
-                    <Box sx={{ 
-                      display: 'flex', 
-                      flexWrap: 'wrap', 
-                      gap: 1, 
-                      alignItems: 'center' 
+                    <Box sx={{
+                      display: 'flex',
+                      flexWrap: 'wrap',
+                      gap: 1,
+                      alignItems: 'center'
                     }}>
                       {/* זמן משוער */}
                       {task.estimated_duration && (
-                        <Chip 
+                        <Chip
                           icon={<TimeIcon sx={{ fontSize: 16 }} />}
                           label={getEstimatedTimeText(task.estimated_duration)}
                           size="small"
                           variant="outlined"
-                          sx={{ 
+                          sx={{
                             height: 24,
                             fontSize: '0.75rem',
                             color: 'text.secondary',
@@ -867,11 +854,11 @@ const TaskList: React.FC<TaskListProps> = ({
 
                       {/* תגיות */}
                       {task.tags?.slice(0, 2).map(tag => (
-                        <Chip 
+                        <Chip
                           key={tag}
                           label={tag}
                           size="small"
-                          sx={{ 
+                          sx={{
                             height: 24,
                             fontSize: '0.75rem',
                             bgcolor: 'primary.light',
@@ -883,9 +870,9 @@ const TaskList: React.FC<TaskListProps> = ({
 
                       {/* תאריך יעד */}
                       {task.dueDate && (
-                        <Typography 
-                          variant="caption" 
-                          sx={{ 
+                        <Typography
+                          variant="caption"
+                          sx={{
                             color: 'text.secondary',
                             fontSize: '0.75rem',
                             fontWeight: 500
@@ -898,15 +885,15 @@ const TaskList: React.FC<TaskListProps> = ({
                   </Box>
 
                   {/* תפריט פעולות מינימליסטי */}
-                  <IconButton 
+                  <IconButton
                     onClick={(e) => {
                       setAnchorEl(e.currentTarget);
                       setSelectedTask(task);
                     }}
-                    sx={{ 
+                    sx={{
                       mt: -0.5,
                       color: 'action.disabled',
-                      '&:hover': { 
+                      '&:hover': {
                         color: 'text.primary',
                         bgcolor: 'action.hover'
                       }
@@ -933,9 +920,9 @@ const TaskList: React.FC<TaskListProps> = ({
       {/* כפתורי פעולה צפים */}
       <Fab
         color="primary"
-        sx={{ 
-          position: 'fixed', 
-          bottom: 80, 
+        sx={{
+          position: 'fixed',
+          bottom: 80,
           right: 16,
           boxShadow: '0 4px 20px rgba(74, 144, 226, 0.3)'
         }}
@@ -946,9 +933,9 @@ const TaskList: React.FC<TaskListProps> = ({
 
       <Fab
         color="secondary"
-        sx={{ 
-          position: 'fixed', 
-          bottom: 150, 
+        sx={{
+          position: 'fixed',
+          bottom: 150,
           right: 16,
           boxShadow: '0 4px 20px rgba(126, 211, 33, 0.3)'
         }}
@@ -1007,7 +994,7 @@ const TaskList: React.FC<TaskListProps> = ({
           ) : (
             <Box sx={{ space: 1 }}>
               {suggestions.map((suggestion, index) => (
-                <Paper 
+                <Paper
                   key={index}
                   sx={{ p: 2, mb: 1, cursor: 'pointer', '&:hover': { bgcolor: 'grey.50' } }}
                   onClick={async () => {
@@ -1021,7 +1008,7 @@ const TaskList: React.FC<TaskListProps> = ({
                       createdAt: new Date(),
                       updatedAt: new Date()
                     };
-                    
+
                     await FirebaseService.addTask(user.id, newTask as any);
                     loadTasks();
                     setAiSuggestionsOpen(false);

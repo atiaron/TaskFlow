@@ -1,9 +1,17 @@
 import { FirebaseService } from './FirebaseService';
-import { AuthService } from './AuthService';
-import { Task, ChatMessage } from '../types';
-import { ChatSession } from '../types/sessions';
+// Import AuthService directly to avoid circular dependency
+import MockAuth from './MockAuth';
+import RealAuth from './RealAuth';
+import { Task, ChatMessage, ChatSession } from '../types';
 import { doc, getDoc } from 'firebase/firestore';
 import { db } from '../config/firebase';
+
+// Determine which auth service to use
+const isDev = process.env.NODE_ENV === 'development' || 
+             process.env.REACT_APP_IS_DEV_MODE === 'true' ||
+             (typeof window !== 'undefined' && window.location.hostname === 'localhost');
+
+const AuthService = isDev ? MockAuth : RealAuth;
 
 /**
  * StorageService - Enhanced wrapper around FirebaseService

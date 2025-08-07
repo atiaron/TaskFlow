@@ -3,5 +3,29 @@
   "typescript.suggest.autoImports": true,
   "typescript.validate.enable": true,
   "editor.formatOnSave": true,
-  "typescript.format.enable": true
+  "typescript.format.enable": true,
+  "chat.agent.maxRequests": 100,
+  "chat.agentSessionsViewLocation": "view",
+  
+  // Terminal settings - Use Command Prompt instead of PowerShell
+  "terminal.integrated.defaultProfile.windows": "Command Prompt",
+  "terminal.integrated.profiles.windows": {
+    "Command Prompt": {
+      "path": "C:\\Windows\\System32\\cmd.exe",
+      "args": [],
+      "icon": "terminal-cmd"
+    },
+    "PowerShell Core": {
+      "path": "pwsh.exe",
+      "icon": "terminal-powershell",
+      "args": ["-NoLogo"]
+    },
+    "Git Bash": {
+      "source": "Git Bash"
+    }
+  },
+  "terminal.integrated.windowsEnableConpty": true,
+  "terminal.integrated.inheritEnv": true,
+  "terminal.integrated.env.windows": {},
+  "terminal.integrated.cwd": "${workspaceFolder}"
 }

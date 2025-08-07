@@ -1,11 +1,8 @@
 const CACHE_NAME = 'taskflow-v1.0.0';
 const OFFLINE_URL = '/offline.html';
 
-// קבצים שנרצה לקשח מיידית
+// קבצים שנרצה לקשח מיידית - רק קבצים שקיימים תמיד
 const STATIC_CACHE_URLS = [
-  '/',
-  '/static/js/bundle.js',
-  '/static/css/main.css',
   '/manifest.json',
   '/offline.html'
 ];
@@ -68,10 +65,22 @@ self.addEventListener('fetch', event => {
   if (event.request.mode === 'navigate') {
     event.respondWith(
       fetch(event.request)
-        .catch(() => {
+        .then(response => {
+          // אם הבקשה הצליחה, נחזיר את התשובה
+          if (response.ok) {
+            return response;
+          }
+          // אם לא הצליחה, נחזיר דף אופליין
           return caches.open(CACHE_NAME)
             .then(cache => {
-              return cache.match(OFFLINE_URL) || cache.match('/');
+              return cache.match(OFFLINE_URL);
+            });
+        })
+        .catch(() => {
+          // אם יש שגיאת רשת, נחזיר דף אופליין
+          return caches.open(CACHE_NAME)
+            .then(cache => {
+              return cache.match(OFFLINE_URL);
             });
         })
     );

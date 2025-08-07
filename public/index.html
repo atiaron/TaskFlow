@@ -143,8 +143,18 @@
         console.log('🔽 Hiding install button');
       }
 
-      // Service Worker Registration
+      // Unregister existing Service Worker to fix infinite loop
       if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.getRegistrations().then(function(registrations) {
+          for(let registration of registrations) {
+            console.log('🔧 Unregistering Service Worker:', registration.scope);
+            registration.unregister();
+          }
+        });
+      }
+      
+      // Service Worker Registration - TEMPORARILY DISABLED TO FIX INFINITE LOOP
+      if ('serviceWorker' in navigator && false) { // Disabled temporarily
         window.addEventListener('load', () => {
           navigator.serviceWorker.register('/sw.js')
             .then((registration) => {

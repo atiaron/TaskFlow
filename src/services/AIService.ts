@@ -40,8 +40,12 @@ export class AIService {
     try {
       console.log('🚀 Sending message to backend...', message);
 
+      const apiUrl = process.env.NODE_ENV === 'development' 
+        ? 'http://localhost:4000' 
+        : (process.env.REACT_APP_API_URL || 'https://taskflow-backend.vercel.app');
+
       // שלח ל-backend במקום ישירות ל-Claude
-      const response = await fetch('http://localhost:4000/api/chat/send', {
+      const response = await fetch(`${apiUrl}/api/chat/send`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
@@ -121,7 +125,11 @@ ${tasksInfo}
     try {
       console.log('🚀 Generating task suggestions via backend...');
 
-      const response = await fetch('http://localhost:4000/api/chat/send', {
+      const apiUrl = process.env.NODE_ENV === 'development' 
+        ? 'http://localhost:4000' 
+        : (process.env.REACT_APP_API_URL || 'https://taskflow-backend.vercel.app');
+
+      const response = await fetch(`${apiUrl}/api/chat/send`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'

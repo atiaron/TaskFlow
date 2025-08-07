@@ -96,6 +96,12 @@ export class SecurityUtils {
   // שליחת מידע אבטחה לשרת
   static async sendSecurityInfo(): Promise<void> {
     try {
+      // Skip in development mode
+      if (process.env.NODE_ENV === 'development' || window.location.hostname === 'localhost') {
+        console.log('🛡️ Security info send skipped in development mode');
+        return;
+      }
+      
       const deviceInfo = {
         fingerprint: this.generateDeviceFingerprint(),
         isNewDevice: this.isNewDevice(),
@@ -103,7 +109,12 @@ export class SecurityUtils {
         suspiciousActivity: await this.detectVPN()
       };
       
-      await fetch('http://localhost:4000/api/auth/device-info', {
+      // Use ApiUtils for environment-aware URL handling
+      const apiUrl = process.env.NODE_ENV === 'development' 
+        ? 'http://localhost:4000' 
+        : (process.env.REACT_APP_API_URL || 'https://taskflow-backend.vercel.app');
+      
+      await fetch(`${apiUrl}/api/auth/device-info`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(deviceInfo)
