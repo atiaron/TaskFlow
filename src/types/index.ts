@@ -108,16 +108,18 @@ export interface Task {
   status: TaskStatus;
   priority: TaskPriority;
   due_date?: Date;
+  dueDate?: Date; // Add camelCase alias for backward compatibility
   created_at: Date;
+  createdAt?: Date; // Add camelCase alias for backward compatibility
   updated_at: Date;
+  updatedAt?: Date; // Add camelCase alias for backward compatibility
+  completed?: boolean; // Add computed property for convenience
   created_by_ai?: boolean;
   category?: string;
   tags?: string[];
 }
 
 export type TaskStatus = 'pending' | 'in_progress' | 'completed' | 'cancelled';
-export type TaskPriority = 'low' | 'medium' | 'high' | 'urgent';
-
 export type TaskPriority = 'low' | 'medium' | 'high' | 'urgent';
 
 export type TaskCategory = 

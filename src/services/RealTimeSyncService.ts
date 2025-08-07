@@ -66,6 +66,15 @@ export class RealTimeSyncService {
   }
 
   /**
+   * Public initialize method for external initialization
+   */
+  public async initialize(userId: string): Promise<void> {
+    console.log('🔄 Initializing RealTimeSyncService for user:', userId);
+    this.syncState.isConnected = true;
+    this.updateSyncState();
+  }
+
+  /**
    * Initialize the sync service
    */
   private initializeService(): void {

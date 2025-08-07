@@ -32,6 +32,7 @@ import {
   Notifications as NotificationIcon
 } from '@mui/icons-material';
 import { Task, User } from '../types';
+import { getTaskDueDate, getTaskUpdatedAt, isTaskCompleted, isTaskOverdue } from '../utils/taskHelpers';
 import { StorageService } from '../services/StorageService';
 import { AIService } from '../services/AIService';
 
@@ -103,8 +104,9 @@ const CalendarView: React.FC<CalendarViewProps> = ({ user }) => {
   const getTasksForDate = (date: Date) => {
     if (!date) return [];
     return tasks.filter(task => {
-      if (!task.dueDate) return false;
-      const taskDate = new Date(task.dueDate);
+      const dueDate = getTaskDueDate(task);
+      if (!dueDate) return false;
+      const taskDate = new Date(dueDate);
       return taskDate.toDateString() === date.toDateString();
     });
   };
@@ -131,25 +133,24 @@ const CalendarView: React.FC<CalendarViewProps> = ({ user }) => {
   const getCompletionRateForDate = (date: Date) => {
     const dateTasks = getTasksForDate(date);
     if (dateTasks.length === 0) return 0;
-    return (dateTasks.filter(t => t.completed).length / dateTasks.length) * 100;
+    return (dateTasks.filter(t => isTaskCompleted(t)).length / dateTasks.length) * 100;
   };
 
   const generateAIInsights = async () => {
     setAiInsightsOpen(true);
     
     const completedThisWeek = tasks.filter(t => {
-      if (!t.completed || !t.updatedAt) return false;
-      const taskDate = new Date(t.updatedAt);
+      if (!isTaskCompleted(t)) return false;
+      const updatedAt = getTaskUpdatedAt(t);
+      if (!updatedAt) return false;
+      const taskDate = new Date(updatedAt);
       const weekAgo = new Date();
       weekAgo.setDate(weekAgo.getDate() - 7);
       return taskDate >= weekAgo;
     }).length;
 
-    const pendingTasks = tasks.filter(t => !t.completed).length;
-    const overdueTasks = tasks.filter(t => {
-      if (!t.dueDate || t.completed) return false;
-      return new Date(t.dueDate) < new Date();
-    }).length;
+    const pendingTasks = tasks.filter(t => !isTaskCompleted(t)).length;
+    const overdueTasks = tasks.filter(isTaskOverdue).length;
 
     const context = `השבוע השלמתי ${completedThisWeek} משימות. יש לי ${pendingTasks} משימות ממתינות ו-${overdueTasks} משימות שפג תוקפן. תן לי תובנות והמלצות לשיפור.`;
     
@@ -165,18 +166,22 @@ const CalendarView: React.FC<CalendarViewProps> = ({ user }) => {
   const getMostProductiveDay = () => {
     const dayStats: { [key: string]: number } = {};
     
-    tasks.filter(t => t.completed && t.updatedAt).forEach(task => {
-      const day = new Date(task.updatedAt!).toLocaleDateString('he-IL', { weekday: 'long' });
-      dayStats[day] = (dayStats[day] || 0) + 1;
+    tasks.filter(t => isTaskCompleted(t)).forEach(task => {
+      const updatedAt = getTaskUpdatedAt(task);
+      if (updatedAt) {
+        const day = new Date(updatedAt).toLocaleDateString('he-IL', { weekday: 'long' });
+        dayStats[day] = (dayStats[day] || 0) + 1;
+      }
     });
 
-    return Object.entries(dayStats).sort(([,a], [,b]) => b - a)[0]?.[0] || 'ראשון';
+    return Object.keys(dayStats).sort((a, b) => (dayStats[b] || 0) - (dayStats[a] || 0))[0] || 'ראשון';
   };
 
   const scheduleNotification = (task: Task) => {
-    if (!task.dueDate || Notification.permission !== 'granted') return;
+    const dueDate = getTaskDueDate(task);
+    if (!dueDate || Notification.permission !== 'granted') return;
     
-    const notificationTime = new Date(task.dueDate);
+    const notificationTime = new Date(dueDate);
     notificationTime.setHours(notificationTime.getHours() - 1); // שעה לפני
     
     const timeUntilNotification = notificationTime.getTime() - Date.now();
@@ -359,8 +364,8 @@ const CalendarView: React.FC<CalendarViewProps> = ({ user }) => {
                 <React.Fragment key={task.id}>
                   <ListItem>
                     <ListItemAvatar>
-                      <Avatar sx={{ bgcolor: task.completed ? 'success.main' : 'warning.main' }}>
-                        {task.completed ? '✅' : '⏳'}
+                      <Avatar sx={{ bgcolor: isTaskCompleted(task) ? 'success.main' : 'warning.main' }}>
+                        {isTaskCompleted(task) ? '✅' : '⏳'}
                       </Avatar>
                     </ListItemAvatar>
                     <ListItemText
@@ -368,14 +373,6 @@ const CalendarView: React.FC<CalendarViewProps> = ({ user }) => {
                       secondary={
                         <Box>
                           <Typography variant="body2">{task.description}</Typography>
-                          {task.estimatedTime && (
-                            <Chip 
-                              icon={<TimeIcon />}
-                              label={`${task.estimatedTime} דק'`}
-                              size="small"
-                              sx={{ mt: 1 }}
-                            />
-                          )}
                         </Box>
                       }
                     />
