@@ -307,7 +307,7 @@ class SecurityServiceClass {
       if (!document.querySelector('meta[http-equiv="Content-Security-Policy"]')) {
         const cspMeta = document.createElement('meta');
         cspMeta.httpEquiv = 'Content-Security-Policy';
-        cspMeta.content = "default-src 'self'; script-src 'self' 'unsafe-inline' https://apis.google.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https:; connect-src 'self' https://firestore.googleapis.com https://api.anthropic.com;";
+        cspMeta.content = "default-src 'self'; connect-src 'self' https://identitytoolkit.googleapis.com https://securetoken.googleapis.com https://www.googleapis.com https://apis.google.com https://oauth2.googleapis.com https://www.gstatic.com https://firestore.googleapis.com https://api.anthropic.com; frame-src 'self' https://accounts.google.com https://*.google.com https://*.gstatic.com; script-src 'self' 'unsafe-inline' https://apis.google.com https://www.gstatic.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; img-src 'self' data: blob: https://www.gstatic.com; font-src 'self' https://fonts.gstatic.com; base-uri 'self'; form-action 'self' https://accounts.google.com;";
         document.head.appendChild(cspMeta);
       }
     }

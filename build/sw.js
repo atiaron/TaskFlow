@@ -53,6 +53,17 @@ self.addEventListener('activate', event => {
 
 // יירוט בקשות רשת
 self.addEventListener('fetch', event => {
+  // Allow Google/Firebase Auth requests to pass through without interception
+  if (event.request.url.includes('identitytoolkit.googleapis.com') ||
+      event.request.url.includes('securetoken.googleapis.com') ||
+      event.request.url.includes('www.googleapis.com') ||
+      event.request.url.includes('apis.google.com') ||
+      event.request.url.includes('accounts.google.com') ||
+      event.request.url.includes('www.gstatic.com')) {
+    // Let these requests go directly to the network without SW interference
+    return;
+  }
+
   // טיפול מיוחד לניווט דפים
   if (event.request.mode === 'navigate') {
     event.respondWith(
