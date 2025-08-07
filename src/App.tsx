@@ -122,6 +122,17 @@ function App() {
     const hideLoadingScreen = () => {
       document.body.classList.add('app-loaded');
     };
+
+    // אתחול AuthService תחילה
+    const initializeAuth = async () => {
+      try {
+        await AuthService.initializeGoogleAuth();
+        console.log('✅ Auth service initialized');
+      } catch (error) {
+        console.error('❌ Failed to initialize auth service:', error);
+        setAppError('שגיאה באתחול שירות האימות');
+      }
+    };
     
     // הגדר listener לשינויי אימות
     const unsubscribe = AuthService.onAuthStateChanged(async (user: User | null) => {
@@ -146,6 +157,9 @@ function App() {
       setLoading(false);
       hideLoadingScreen();
     });
+
+    // התחל את האתחול
+    initializeAuth();
 
     // נקה את הlisteners כשהcomponent נמחק
     return () => {

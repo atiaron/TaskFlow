@@ -6,7 +6,7 @@ import { getAuth, connectAuthEmulator } from 'firebase/auth';
 // הגדרות Firebase - השתמש בהגדרות מוכנות לפיתוח
 const firebaseConfig = {
   apiKey: process.env.REACT_APP_FIREBASE_API_KEY || "AIzaSyAVm4-D1EnSJTbIEnDIyLsX4Aeyz1c7v0E",
-  authDomain: process.env.REACT_APP_FIREBASE_AUTH_DOMAIN || "taskflow-atiaron.firebaseapp.com",
+  authDomain: process.env.REACT_APP_FIREBASE_AUTH_DOMAIN || "task-flow-lac-three.vercel.app",
   projectId: process.env.REACT_APP_FIREBASE_PROJECT_ID || "taskflow-atiaron",
   storageBucket: process.env.REACT_APP_FIREBASE_STORAGE_BUCKET || "taskflow-atiaron.firebasestorage.app",
   messagingSenderId: process.env.REACT_APP_FIREBASE_MESSAGING_SENDER_ID || "244419897641",

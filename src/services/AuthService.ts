@@ -1,7 +1,7 @@
 /* cspell:disable */
 import { User } from '../types';
 import { auth } from '../config/firebase';
-import { signInWithPopup, GoogleAuthProvider, signOut as firebaseSignOut, onAuthStateChanged } from 'firebase/auth';
+import { signInWithRedirect, getRedirectResult, GoogleAuthProvider, signOut as firebaseSignOut, onAuthStateChanged } from 'firebase/auth';
 
 export class AuthService {
   private static listeners: ((user: User | null) => void)[] = [];
@@ -15,8 +15,12 @@ export class AuthService {
       this.provider.addScope('email');
       this.provider.addScope('profile');
       
+      // Handle redirect result if user came back from Google OAuth
+      await this.handleRedirectResult();
+      
       // Set up auth state listener
       onAuthStateChanged(auth, (firebaseUser) => {
+        console.log('🔄 Auth state changed:', firebaseUser ? `User: ${firebaseUser.email}` : 'No user');
         if (firebaseUser) {
           const taskflowUser: User = this.convertFirebaseUserToTaskflowUser(firebaseUser);
           localStorage.setItem('taskflow-user', JSON.stringify(taskflowUser));
@@ -35,18 +39,34 @@ export class AuthService {
     }
   }
 
+  static async handleRedirectResult(): Promise<void> {
+    console.log('🔍 Checking for redirect result...');
+    
+    try {
+      const result = await getRedirectResult(auth);
+      if (result) {
+        console.log('✅ Google sign-in redirect successful:', result.user.email);
+        // onAuthStateChanged will handle the rest
+      } else {
+        console.log('ℹ️ No redirect result found');
+      }
+    } catch (error: any) {
+      console.error('❌ Error handling redirect result:', error);
+      throw error;
+    }
+  }
+
   static async signInWithGoogle(): Promise<void> {
     console.log('🔍 AuthService.signInWithGoogle called (Firebase)');
     
     try {
-      console.log('🚀 Starting Firebase Google sign in...');
+      console.log('🚀 Starting Firebase Google sign in with redirect...');
       
-      const result = await signInWithPopup(auth, this.provider);
-      const user = result.user;
+      // Use redirect instead of popup to avoid Cross-Origin-Opener-Policy issues
+      await signInWithRedirect(auth, this.provider);
       
-      console.log('✅ Firebase sign in successful:', user.email);
-      
-      // The auth state listener will handle the rest
+      // The page will redirect and come back, so we don't get a result here
+      console.log('🔄 Redirecting to Google sign in...');
       
     } catch (error: any) {
       console.error('❌ Firebase Google sign in failed:', error);
