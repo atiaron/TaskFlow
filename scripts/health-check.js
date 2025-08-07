@@ -20,24 +20,25 @@ const fs = require('fs');
 const path = require('path');
 const { Command } = require('commander');
 let chalk, cliProgress;
+let hasChalk = false;
+
 try {
   chalk = require('chalk');
   cliProgress = require('cli-progress');
+  hasChalk = true;
 } catch (error) {
   // Fallback to no colors if chalk not available
+  hasChalk = false;
   const noColor = (text) => text;
   chalk = {
     blue: { bold: noColor },
     cyan: noColor,
-    green: { bold: noColor },
-    yellow: { bold: noColor },
-    red: { bold: noColor },
+    green: noColor,
+    yellow: noColor,
+    red: noColor,
     gray: noColor,
     reset: ''
   };
-  chalk.green.green = noColor;
-  chalk.yellow.yellow = noColor;
-  chalk.red.red = noColor;
   
   cliProgress = {
     SingleBar: class {
@@ -49,6 +50,15 @@ try {
     }
   };
 }
+
+// Helper functions for colored output
+const colorize = {
+  info: (text) => hasChalk ? chalk.blue(text) : text,
+  success: (text) => hasChalk ? chalk.green(text) : text,
+  warning: (text) => hasChalk ? chalk.yellow(text) : text,
+  error: (text) => hasChalk ? chalk.red(text) : text,
+  bold: (text) => hasChalk ? chalk.bold(text) : text
+};
 
 // Import health check modules
 const FirebaseHealth = require(path.join(__dirname, 'firebase-health'));
@@ -104,7 +114,7 @@ class HealthCheckSystem {
 
       return config;
     } catch (error) {
-      console.warn(chalk.yellow('⚠️  Warning: Could not load configuration, using defaults'));
+      console.warn('⚠️  Warning: Could not load configuration, using defaults');
       return this.getDefaultConfig();
     }
   }
@@ -169,7 +179,7 @@ class HealthCheckSystem {
       
       process.exit(this.results.summary.criticalIssues > 0 ? 1 : 0);
     } catch (error) {
-      console.error(chalk.red('❌ Health check failed:'), error.message);
+      console.error('❌ Health check failed:', error.message);
       if (this.options.verbose) {
         console.error(error.stack);
       }
@@ -195,8 +205,8 @@ class HealthCheckSystem {
       throw new Error(`Unknown environment: ${this.options.environment}`);
     }
 
-    console.log(chalk.cyan(`🌍 Environment: ${this.options.environment}`));
-    console.log(chalk.cyan(`🔗 Base URL: ${envConfig.baseUrl}\n`));
+      console.log(`🌍 Environment: ${this.options.environment}`);
+      console.log(`🔗 Base URL: ${envConfig.baseUrl}\n`);
   }
 
   /**
@@ -269,7 +279,7 @@ class HealthCheckSystem {
         await this.runCheckWithProgress(check);
       } else {
         this.results.summary.skippedChecks++;
-        console.log(chalk.gray(`⏭️  Skipping ${check.label}`));
+        console.log(`⏭️  Skipping ${check.label}`);
       }
     }
 
@@ -328,7 +338,7 @@ class HealthCheckSystem {
    * Bundle Analysis Check
    */
   async runBundleAnalysis() {
-    console.log(chalk.blue('\n📦 Analyzing bundle...'));
+    console.log('\n📦 Analyzing bundle...');
     
     const buildPath = path.join(process.cwd(), 'build');
     if (!fs.existsSync(buildPath)) {
@@ -423,7 +433,7 @@ class HealthCheckSystem {
    * Security Audit Check
    */
   async runSecurityAudit() {
-    console.log(chalk.blue('\n🔒 Running security audit...'));
+    console.log('\n🔒 Running security audit...');
     
     const securityAudit = new SecurityAudit(this.config.security);
     return await securityAudit.run();
@@ -433,7 +443,7 @@ class HealthCheckSystem {
    * Performance Check
    */
   async runPerformanceCheck() {
-    console.log(chalk.blue('\n⚡ Running performance tests...'));
+    console.log('\n⚡ Running performance tests...');
     
     const performanceCheck = new PerformanceCheck(this.config.performance);
     return await performanceCheck.run(this.config.environment[this.options.environment].baseUrl);
@@ -443,7 +453,7 @@ class HealthCheckSystem {
    * Firebase Health Check
    */
   async runFirebaseHealth() {
-    console.log(chalk.blue('\n🔥 Checking Firebase health...'));
+    console.log('\n🔥 Checking Firebase health...');
     
     const firebaseHealth = new FirebaseHealth(this.config.firebase);
     return await firebaseHealth.run();
@@ -453,7 +463,7 @@ class HealthCheckSystem {
    * Build Quality Check
    */
   async runBuildQuality() {
-    console.log(chalk.blue('\n🔨 Checking build quality...'));
+    console.log('\n🔨 Checking build quality...');
     
     const results = {
       success: true,
@@ -501,7 +511,7 @@ class HealthCheckSystem {
    * Deployment Validation Check
    */
   async runDeploymentValidation() {
-    console.log(chalk.blue('\n🚀 Validating deployment...'));
+    console.log('\n🚀 Validating deployment...');
     
     if (this.config.environment[this.options.environment].skipDeploymentChecks) {
       return {
@@ -519,7 +529,7 @@ class HealthCheckSystem {
    * Browser Compatibility Testing
    */
   async runBrowserTesting() {
-    console.log(chalk.blue('\n🌐 Testing browser compatibility...'));
+    console.log('\n🌐 Testing browser compatibility...');
     
     // Basic compatibility check
     return {
@@ -537,7 +547,7 @@ class HealthCheckSystem {
    * Error Detection Check
    */
   async runErrorDetection() {
-    console.log(chalk.blue('\n🔍 Detecting errors...'));
+    console.log('\n🔍 Detecting errors...');
     
     return {
       success: true,
@@ -592,7 +602,7 @@ class HealthCheckSystem {
     const filepath = path.join(reportsDir, filename);
 
     fs.writeFileSync(filepath, JSON.stringify(this.results, null, 2));
-    console.log(chalk.green(`📄 JSON report saved: ${filepath}`));
+    console.log('📄 JSON report saved: ' + filepath);
   }
 
   /**
@@ -606,7 +616,7 @@ class HealthCheckSystem {
 
     const html = this.generateHtmlReport();
     fs.writeFileSync(filepath, html);
-    console.log(chalk.green(`📊 HTML report saved: ${filepath}`));
+    console.log('📊 HTML report saved: ' + filepath);
   }
 
   /**
@@ -780,28 +790,28 @@ class HealthCheckSystem {
     const duration = Math.round(summary.duration / 1000);
     
     console.log('\n' + '='.repeat(60));
-    console.log(chalk.blue.bold('📊 HEALTH CHECK SUMMARY'));
+    console.log('📊 HEALTH CHECK SUMMARY');
     console.log('='.repeat(60));
     
     console.log(`⏱️  Duration: ${duration}s`);
-    console.log(`📊 Score: ${this.getScoreColor(summary.score)}${summary.score}/100${chalk.reset}`);
-    console.log(`✅ Passed: ${chalk.green(summary.passedChecks)}`);
-    console.log(`❌ Failed: ${chalk.red(summary.failedChecks)}`);
-    console.log(`⚠️  Warnings: ${chalk.yellow(summary.warningChecks)}`);
-    console.log(`⏭️  Skipped: ${chalk.gray(summary.skippedChecks)}`);
+    console.log(`📊 Score: ${summary.score}/100`);
+    console.log(`✅ Passed: ${summary.passedChecks}`);
+    console.log(`❌ Failed: ${summary.failedChecks}`);
+    console.log(`⚠️  Warnings: ${summary.warningChecks}`);
+    console.log(`⏭️  Skipped: ${summary.skippedChecks}`);
     
     if (summary.criticalIssues > 0) {
-      console.log(`🚨 Critical Issues: ${chalk.red.bold(summary.criticalIssues)}`);
+      console.log(`🚨 Critical Issues: ${summary.criticalIssues}`);
     }
     
     console.log('\n' + '='.repeat(60));
     
     if (summary.score >= 80) {
-      console.log(chalk.green.bold('🎉 Excellent health! TaskFlow is running optimally.'));
+      console.log('🎉 Excellent health! TaskFlow is running optimally.');
     } else if (summary.score >= 60) {
-      console.log(chalk.yellow.bold('⚠️  Good health with some areas for improvement.'));
+      console.log('⚠️  Good health with some areas for improvement.');
     } else {
-      console.log(chalk.red.bold('🚨 Poor health! Critical issues need immediate attention.'));
+      console.log('🚨 Poor health! Critical issues need immediate attention.');
     }
   }
 
