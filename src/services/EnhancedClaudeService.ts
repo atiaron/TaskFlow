@@ -21,7 +21,8 @@
  */
 
 import { SecurityManager } from './SecurityManager';
-import { AuthService, FirebaseService } from '../services';
+import { AuthService } from './AuthService';
+import { FirebaseService } from './FirebaseService';
 import { PerformanceMonitor } from './PerformanceMonitor';
 import type {
   Message,

@@ -65,6 +65,9 @@ import { EnhancedClaudeService } from '../services/EnhancedClaudeService';
 import { SecurityManager } from '../services/SecurityManager';
 import { RealTimeSyncService } from '../services/RealTimeSyncService';
 import { AuthService } from '../services/AuthService';
+import AuthProvider from '../services/AuthProvider';
+import { TestApiService } from '../services/TestApiService';
+import guestStore from '../storage/guestStore';
 import GamificationSystem from './GamificationSystem';
 import SmartNotificationSystem, { useSmartNotifications } from './SmartNotificationSystem';
 import QuickActionsMenu from './QuickActionsMenu';
@@ -75,14 +78,14 @@ import AnimatedList from './AnimatedList';
 
 // Enhanced interfaces for new architecture
 interface TaskListProps {
-  user: User;
-  onTasksUpdate?: () => void;
+  user: User | null; // Support Guest Mode
+  onTasksUpdate?: (tasks?: Task[]) => void;
   onTaskCreated?: (task: Task) => void;
   className?: string;
   maxItems?: number;
   enableAICreation?: boolean;
   enableSearch?: boolean;
-  variant?: 'full' | 'compact' | 'widget';
+  variant?: 'full' | 'compact';
 }
 
 interface LoadingState {
@@ -153,11 +156,15 @@ const TaskList: React.FC<TaskListProps> = ({
   const [newTaskCategory, setNewTaskCategory] = useState<TaskCategory>('personal');
   const [newTaskDueDate, setNewTaskDueDate] = useState<string>('');
 
-  // Services
+    // Services
   const claudeService = useRef(EnhancedClaudeService.getInstance());
   const securityManager = useRef(SecurityManager.getInstance());
   const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+
+  // Test states
+  const [testResults, setTestResults] = useState<string[]>([]);
+  const [testRunning, setTestRunning] = useState(false);
 
   // השתמש במערכת ההודעות החכמה
   const {
@@ -174,12 +181,20 @@ const TaskList: React.FC<TaskListProps> = ({
   // 🚨 DEPRECATED: Manual task loading - removed to prevent Firebase infinite loops
   // Now using only real-time sync via RealTimeSyncService.subscribeToTasks()
   // This was causing infinite Firebase calls when combined with real-time listeners
-  /*
+  
+  // Load tasks using Sync Service (supports both Guest and Cloud mode)
   const loadTasks = useCallback(async () => {
-    // REMOVED: This was causing infinite Firebase queries
-    // Real-time sync handles all task loading automatically
-  }, [user.id, showAIInsight]);
-  */
+    try {
+      console.log('🔧 Manual task reload requested');
+      const { default: syncService } = await import('../services/sync');
+      const store = syncService.getStore();
+      const userTasks = await store.list();
+      setTasks(userTasks);
+      console.log(`📝 Manually loaded ${userTasks.length} tasks`);
+    } catch (error) {
+      console.error('Error manually loading tasks:', error);
+    }
+  }, []);
 
   // Smart filtering and search
   useEffect(() => {
@@ -249,7 +264,9 @@ const TaskList: React.FC<TaskListProps> = ({
           return new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime();
         case 'created_at':
         default:
-          return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+          const aTime = a.createdAt || a.created_at || new Date(0);
+          const bTime = b.createdAt || b.created_at || new Date(0);
+          return new Date(bTime).getTime() - new Date(aTime).getTime();
       }
     });
 
@@ -266,24 +283,60 @@ const TaskList: React.FC<TaskListProps> = ({
     console.log('🔧 TaskList: Setting up real-time tasks subscription');
     setLoadingState({ status: 'loading', message: 'מאתחל האזנה בזמן אמת...', progress: 25 });
 
-    const syncService = RealTimeSyncService.getInstance();
+    // Check if we're in guest mode
+    const isGuestMode = !user && sessionStorage.getItem('guestModeActive') === 'true';
+    
+    if (isGuestMode) {
+      // Guest mode - use GuestStore
+      console.log('👤 TaskList: Guest mode detected, using GuestStore');
+      
+      const loadGuestTasks = async () => {
+        try {
+          const guestTasks = await guestStore.list();
+          console.log(`📝 TaskList: Loaded ${guestTasks.length} tasks from GuestStore`);
+          setTasks(guestTasks);
+          setLoadingState({ status: 'complete', progress: 100 });
+          
+          // Set to idle after a short delay
+          setTimeout(() => setLoadingState({ status: 'idle' }), 1000);
+          
+          onTasksUpdate?.();
+        } catch (error) {
+          console.error('❌ TaskList: Error loading guest tasks:', error);
+          setLoadingState({ status: 'idle' });
+        }
+      };
+      
+      loadGuestTasks();
+      
+      // For guest mode, no real-time subscription needed
+      return () => {
+        console.log('🧹 TaskList: Guest mode cleanup (no subscription to clean)');
+      };
+    } else {
+      // Authenticated mode - use RealTimeSyncService
+      const syncService = RealTimeSyncService.getInstance();
+      
+      // הגדרת פונקצית getCurrentUser עבור RealTimeSyncService
+      syncService.setGetCurrentUser(() => user);
 
-    const unsubscribe = syncService.subscribeToTasks((updatedTasks) => {
-      console.log(`📝 TaskList: Received ${updatedTasks.length} tasks from real-time sync`);
-      setTasks(updatedTasks);
-      setLoadingState({ status: 'complete', progress: 100 });
+      const unsubscribe = syncService.subscribeToTasks((updatedTasks) => {
+        console.log(`📝 TaskList: Received ${updatedTasks.length} tasks from real-time sync`);
+        setTasks(updatedTasks);
+        setLoadingState({ status: 'complete', progress: 100 });
 
-      // Set to idle after a short delay
-      setTimeout(() => setLoadingState({ status: 'idle' }), 1000);
+        // Set to idle after a short delay
+        setTimeout(() => setLoadingState({ status: 'idle' }), 1000);
 
-      onTasksUpdate?.();
-    });
+        onTasksUpdate?.();
+      });
 
-    return () => {
-      console.log('🧹 TaskList: Cleaning up real-time tasks subscription');
-      unsubscribe();
-    };
-  }, [onTasksUpdate]);
+      return () => {
+        console.log('🧹 TaskList: Cleaning up real-time tasks subscription');
+        unsubscribe();
+      };
+    }
+  }, [user, onTasksUpdate]);
 
   // AI-powered task creation detection
   const detectTaskCreationIntent = useCallback(async (userInput: string): Promise<TaskCreationSuggestion> => {
@@ -353,7 +406,7 @@ const TaskList: React.FC<TaskListProps> = ({
       console.error('Error detecting task creation intent:', error);
       return { confidence: 0, action: 'none', reasoning: 'שגיאה בזיהוי כוונות', userMessage: userInput };
     }
-  }, [enableAICreation, user.id]);
+  }, [enableAICreation, user?.id]);
 
   // Smart task creation handler
   const handleSmartTaskCreation = useCallback(async (userInput: string) => {
@@ -401,6 +454,55 @@ const TaskList: React.FC<TaskListProps> = ({
     };
   }, []);
 
+  // Test functions for QA
+  const runAuthTests = async () => {
+    setTestRunning(true);
+    setTestResults([]);
+    const results: string[] = [];
+
+    try {
+      // Test 1: Health check (no auth)
+      results.push('🧪 Test 1: Health check...');
+      await TestApiService.health();
+      results.push('✅ Health check passed');
+
+      // Test 2: Protected ping (should work)
+      results.push('🧪 Test 2: Protected ping with valid token...');
+      await TestApiService.ping();
+      results.push('✅ Protected ping passed');
+
+      // Test 3: Refresh flow test
+      results.push('🧪 Test 3: Testing refresh flow...');
+      const originalToken = TestApiService.corruptAccessToken();
+      
+      if (originalToken) {
+        try {
+          await TestApiService.ping(); // Should trigger 401 → refresh → retry
+          results.push('✅ Refresh flow passed');
+        } catch (error) {
+          results.push('❌ Refresh flow failed: ' + (error as any).message);
+        }
+        
+        TestApiService.restoreAccessToken(originalToken);
+      } else {
+        results.push('⚠️ No token to corrupt - skipping refresh test');
+      }
+
+      // Test 4: Concurrent requests
+      results.push('🧪 Test 4: Testing concurrent requests...');
+      await TestApiService.testConcurrentRequests();
+      results.push('✅ Concurrent requests passed');
+
+      results.push('🎉 All tests completed!');
+
+    } catch (error: any) {
+      results.push('❌ Test failed: ' + error.message);
+    } finally {
+      setTestResults(results);
+      setTestRunning(false);
+    }
+  };
+
   const toggleTaskComplete = async (task: Task) => {
     try {
       const updatedTask = {
@@ -409,7 +511,11 @@ const TaskList: React.FC<TaskListProps> = ({
         updatedAt: new Date()
       };
 
-      await FirebaseService.updateTask(user.id, task.id!, updatedTask);
+      // Use SyncService instead of FirebaseService directly
+      const { default: syncService } = await import('../services/sync');
+      const store = syncService.getStore();
+      await store.upsert(updatedTask);
+      
       setTasks(tasks.map(t => t.id === task.id ? updatedTask : t));
 
       // הצגת הודעות חכמות
@@ -459,7 +565,11 @@ const TaskList: React.FC<TaskListProps> = ({
 
   const deleteTask = async (taskId: string) => {
     try {
-      await FirebaseService.deleteTask(user.id, taskId);
+      // Use SyncService instead of FirebaseService directly
+      const { default: syncService } = await import('../services/sync');
+      const store = syncService.getStore();
+      await store.remove(taskId);
+      
       setTasks(tasks.filter(t => t.id !== taskId));
       setAnchorEl(null);
       onTasksUpdate?.();
@@ -529,12 +639,14 @@ const TaskList: React.FC<TaskListProps> = ({
         tags: taskData.tags || [],
         estimated_duration: (taskData as any).estimated_duration,
         dueDate: taskData.dueDate,
+        due_date: taskData.dueDate,
         createdAt: new Date(),
         updatedAt: new Date(),
-        user_id: user.id,
-        created_by: 'manual',
-        version: 1,
-        last_modified_by: 'user'
+        userId: user?.id || 'guest',
+        created_at: new Date(),
+        updated_at: new Date(),
+        status: 'pending' as const,
+        created_by_ai: false
       } as Task;
 
       // Optimistic update
@@ -542,12 +654,14 @@ const TaskList: React.FC<TaskListProps> = ({
       setTasks(prev => [tempTask, ...prev]);
 
       try {
-        // Attempt to save to database
-        await FirebaseService.addTask(user.id, newTask as Omit<Task, 'id'>);
+        // Use SyncService instead of FirebaseService directly
+        const { default: syncService } = await import('../services/sync');
+        const store = syncService.getStore();
+        await store.upsert(newTask as Task);
         setSyncStatus('online');
 
-        // Reload tasks to get server-assigned ID
-        setTimeout(() => loadTasks(), 500);
+        // Real-time sync will handle task updates automatically
+        // No need to manually reload tasks as RealTimeSyncService handles this
 
         showSuccess('נוצרה בהצלחה!', `המשימה "${newTask?.title}" נוספה למערכת`);
 
@@ -575,7 +689,7 @@ const TaskList: React.FC<TaskListProps> = ({
         setTasks(prev => prev.filter(t => t.id !== newTask!.id));
       }
     }
-  }, [user.id, onTaskCreated, onTasksUpdate, loadTasks, showSuccess, showAIInsight]);
+  }, [user?.id, onTaskCreated, onTasksUpdate, showSuccess, showAIInsight]);
 
   const handleQuickAdd = async (text: string) => {
     try {
@@ -650,42 +764,61 @@ const TaskList: React.FC<TaskListProps> = ({
         }}>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
             <Avatar
-              src={user.photoURL || ''}
-              alt={user.displayName || user.email}
+              src={(user as any)?.photoURL || ''}
+              alt={user ? ((user as any).displayName || user.email) : 'Guest'}
               sx={{ width: 40, height: 40 }}
             >
-              {(user.displayName || user.email)?.charAt(0).toUpperCase()}
+              {user ? ((user as any).displayName || user.email)?.charAt(0).toUpperCase() : 'G'}
             </Avatar>
             <Box>
               <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>
-                {user.displayName || 'משתמש'}
+                {user ? ((user as any).displayName || 'משתמש') : 'משתמש אורח'}
               </Typography>
               <Typography variant="body2" color="text.secondary">
-                {user.email}
+                {user?.email || 'Guest Mode'}
               </Typography>
             </Box>
           </Box>
 
-          <Button
-            variant="outlined"
-            color="error"
-            size="small"
-            onClick={async () => {
-              try {
-                await AuthService.signOut();
-                // הניווט יקרה באופן אוטומטי דרך onAuthStateChanged ב-App.tsx
-              } catch (error) {
-                console.error('Logout failed:', error);
-              }
-            }}
-            sx={{
-              borderRadius: 2,
-              textTransform: 'none',
-              fontWeight: 600
-            }}
-          >
-            התנתק
-          </Button>
+          <Box sx={{ display: 'flex', gap: 1 }}>
+            {process.env.NODE_ENV === 'development' && (
+              <Button
+                variant="outlined"
+                color="info"
+                size="small"
+                onClick={runAuthTests}
+                disabled={testRunning}
+                sx={{
+                  borderRadius: 2,
+                  textTransform: 'none',
+                  fontWeight: 600
+                }}
+              >
+                {testRunning ? '🧪 בודק...' : '🔬 טסט Auth'}
+              </Button>
+            )}
+            
+            <Button
+              variant="outlined"
+              color="error"
+              size="small"
+              onClick={async () => {
+                try {
+                  await AuthProvider.signOut();
+                  // הניווט יקרה באופן אוטומטי דרך onAuthStateChanged ב-App.tsx
+                } catch (error) {
+                  console.error('Logout failed:', error);
+                }
+              }}
+              sx={{
+                borderRadius: 2,
+                textTransform: 'none',
+                fontWeight: 600
+              }}
+            >
+              התנתק
+            </Button>
+          </Box>
         </Box>
 
         {/* כותרת המשימות */}
@@ -710,6 +843,23 @@ const TaskList: React.FC<TaskListProps> = ({
           </Typography>
         </Box>
       </Box>
+
+      {/* תוצאות טסטים (development only) */}
+      {process.env.NODE_ENV === 'development' && testResults.length > 0 && (
+        <Paper sx={{ p: 2, mb: 3, bgcolor: 'grey.50' }}>
+          <Typography variant="h6" sx={{ mb: 1 }}>
+            🧪 תוצאות טסטי Auth Bridge
+          </Typography>
+          <Box component="pre" sx={{ 
+            fontSize: '0.85rem', 
+            fontFamily: 'monospace',
+            whiteSpace: 'pre-wrap',
+            margin: 0
+          }}>
+            {testResults.join('\n')}
+          </Box>
+        </Paper>
+      )}
 
       {/* פילטרים אלגנטיים */}
       <Box sx={{
@@ -837,10 +987,10 @@ const TaskList: React.FC<TaskListProps> = ({
                       alignItems: 'center'
                     }}>
                       {/* זמן משוער */}
-                      {task.estimated_duration && (
+                      {(task as any).estimated_duration && (
                         <Chip
                           icon={<TimeIcon sx={{ fontSize: 16 }} />}
-                          label={getEstimatedTimeText(task.estimated_duration)}
+                          label={getEstimatedTimeText((task as any).estimated_duration)}
                           size="small"
                           variant="outlined"
                           sx={{
@@ -1009,7 +1159,10 @@ const TaskList: React.FC<TaskListProps> = ({
                       updatedAt: new Date()
                     };
 
-                    await FirebaseService.addTask(user.id, newTask as any);
+                    // Use SyncService instead of FirebaseService directly
+                    const { default: syncService } = await import('../services/sync');
+                    const store = syncService.getStore();
+                    await store.upsert(newTask as any);
                     loadTasks();
                     setAiSuggestionsOpen(false);
                   }}

@@ -23,17 +23,30 @@ export const db = getFirestore(app);
 export const auth = getAuth(app);
 
 // בדיקה אם אנחנו ב-development ובlocalhost - רק אז נשתמש בemulator
-if (process.env.NODE_ENV === 'development' && window.location.hostname === 'localhost') {
+const useEmulators = process.env.REACT_APP_USE_EMULATORS === '1';
+
+if (useEmulators) {
   try {
-    // התחבר לFirestore Emulator
-    connectFirestoreEmulator(db, 'localhost', 8081);
+    // התחבר לFirestore Emulator - port 8084 (מעודכן)
+    connectFirestoreEmulator(db, 'localhost', 8084);
+    
+    // הגדרות נוספות ל-Firestore emulator
+    if (typeof window !== 'undefined') {
+      // @ts-ignore - הגדרות פנימיות של Firebase
+      window.FIRESTORE_EMULATOR_HOST = 'localhost:8084';
+    }
     
     // התחבר לAuth Emulator
     connectAuthEmulator(auth, 'http://localhost:9099');
     
-    console.log('🔧 Connected to Firebase Emulators @ localhost:8081');
+    console.log('🔧 DEV: Firebase Emulators enabled (Auth: 9099, Firestore: 8084)');
+    console.warn("⚠️ Auth Emulator is active - this is normal in development");
   } catch (error) {
     console.log('⚠️ Emulators not available, using production Firebase');
+    console.log('🔍 Error details:', error);
+    
+    // אם האמולטור לא זמין, נמשיך עם Firebase רגיל
+    console.log('🌐 Falling back to production Firebase for development');
   }
 } else {
   console.log('🚀 Using production Firebase');

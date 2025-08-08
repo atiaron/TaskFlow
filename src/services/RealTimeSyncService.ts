@@ -95,8 +95,11 @@ export class RealTimeSyncService {
   ): () => void {
     const user = this.getCurrentUser?.();
     if (!user) {
+      console.error('🚨 RealTimeSyncService: User not authenticated for sessions - getCurrentUser returned null');
       throw new Error('User not authenticated');
     }
+
+    console.log('✅ RealTimeSyncService: User authenticated for sessions:', user.email);
 
     // Add callback to listeners
     this.sessionListeners.add(callback);
@@ -184,8 +187,11 @@ export class RealTimeSyncService {
   ): () => void {
     const user = this.getCurrentUser?.();
     if (!user) {
+      console.error('🚨 RealTimeSyncService: User not authenticated for messages - getCurrentUser returned null');
       throw new Error('User not authenticated');
     }
+
+    console.log('✅ RealTimeSyncService: User authenticated for messages:', user.email);
 
     // Add callback to listeners
     if (!this.messageListeners.has(sessionId)) {
@@ -276,8 +282,11 @@ export class RealTimeSyncService {
   ): () => void {
     const user = this.getCurrentUser?.();
     if (!user) {
+      console.error('🚨 RealTimeSyncService: User not authenticated - getCurrentUser returned null');
       throw new Error('User not authenticated');
     }
+
+    console.log('✅ RealTimeSyncService: User authenticated successfully:', user.email);
 
     // Add callback to listeners
     this.taskListeners.add(callback);
@@ -302,7 +311,7 @@ export class RealTimeSyncService {
             const data = doc.data();
             tasks.push({
               id: doc.id,
-              user_id: user.id,
+              userId: user.id,
               title: data.title,
               description: data.description,
               completed: data.completed,
@@ -315,16 +324,10 @@ export class RealTimeSyncService {
               created_at: data.createdAt?.toDate() || new Date(),
               updatedAt: data.updatedAt?.toDate() || new Date(),
               updated_at: data.updatedAt?.toDate() || new Date(),
-              created_by: data.created_by || 'ai',
-              estimated_duration: data.estimated_duration,
-              actual_duration: data.actual_duration,
+              created_by_ai: data.created_by === 'ai',
+              estimatedTime: data.estimated_duration,
               tags: data.tags || [],
-              parent_id: data.parent_id,
-              version: data.version || 1,
-              last_modified_by: data.last_modified_by || 'unknown',
-              sync_status: data.sync_status || 'synced',
-              shared_with: data.shared_with || [],
-              permissions: data.permissions || {}
+              status: data.status || 'pending'
             });
           });
 

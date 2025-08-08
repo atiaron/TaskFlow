@@ -8,8 +8,9 @@
  * - Data validation before Firestore operations
  * - Security headers and CSP
  * - Session management and token validation
+ * - Development CSP relaxation
  * 
- * Version: 2.1 with CSP headers - added Firebase domains
+ * Version: 2.2 with enhanced CSP support for development
  */
 
 export interface SecurityValidationResult {
@@ -332,9 +333,9 @@ class SecurityServiceClass {
         const cspMeta = document.createElement('meta');
         cspMeta.httpEquiv = 'Content-Security-Policy';
         cspMeta.content = [
-          "default-src 'self' http://localhost:4000 http://127.0.0.1:4000 'unsafe-inline' 'unsafe-eval' data: blob:",
-          "connect-src 'self' http://localhost:4000 http://127.0.0.1:4000 ws://localhost:3000 wss://localhost:3000",
-          "script-src 'self' 'unsafe-inline' 'unsafe-eval' http://localhost:4000",
+          "default-src 'self' http://localhost:3333 http://127.0.0.1:3333 'unsafe-inline' 'unsafe-eval' data: blob:",
+          "connect-src 'self' http://localhost:3333 http://127.0.0.1:3333 ws://localhost:3000 wss://localhost:3000",
+          "script-src 'self' 'unsafe-inline' 'unsafe-eval' http://localhost:3333",
           "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
           "img-src 'self' data: blob: https:",
           "font-src 'self' https://fonts.gstatic.com",
@@ -431,6 +432,92 @@ class SecurityServiceClass {
       blockedRequests,
       validationErrors: 0 // This would be tracked separately in a real implementation
     };
+  }
+
+  /**
+   * CSP Management - הקלה על CSP בסביבת פיתוח
+   */
+  public initializeCSPForDevelopment(): void {
+    if (process.env.NODE_ENV === 'development') {
+      console.warn('⚠️ CSP relaxed for development mode');
+      this.relaxCSPForDevelopment();
+      this.setupCSPReporting();
+    } else {
+      console.log('🔒 Production security mode active');
+    }
+  }
+
+  /**
+   * הקלה על CSP בסביבת פיתוח
+   */
+  private relaxCSPForDevelopment(): void {
+    if (typeof document !== 'undefined') {
+      const existingCSP = document.querySelector('meta[http-equiv="Content-Security-Policy"]');
+      if (!existingCSP) {
+        const meta = document.createElement('meta');
+        meta.httpEquiv = 'Content-Security-Policy';
+        meta.content = `
+          default-src 'self'; 
+          connect-src 'self' http://localhost:8081 http://localhost:9099 https://*.googleapis.com https://*.firebaseapp.com https://api.anthropic.com; 
+          script-src 'self' 'unsafe-inline' 'unsafe-eval' https://*.googleapis.com; 
+          style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; 
+          img-src 'self' data: https: blob:; 
+          font-src 'self' https://fonts.gstatic.com;
+        `.replace(/\s+/g, ' ').trim();
+        
+        document.head.appendChild(meta);
+        console.log('🔧 Development CSP applied');
+      }
+    }
+  }
+
+  /**
+   * הגדרת מאזין לשגיאות CSP
+   */
+  public setupCSPReporting(): void {
+    if (typeof document !== 'undefined') {
+      document.addEventListener('securitypolicyviolation', (event) => {
+        if (process.env.NODE_ENV === 'development') {
+          console.warn('🚨 CSP Violation in development:', {
+            blockedURI: event.blockedURI,
+            violatedDirective: event.violatedDirective,
+            originalPolicy: event.originalPolicy,
+            sourceFile: event.sourceFile,
+            lineNumber: event.lineNumber
+          });
+          console.warn('💡 Consider adding the blocked resource to allowed domains');
+        }
+      });
+    }
+  }
+
+  /**
+   * בדיקה אם כתובת מותרת לפי CSP
+   */
+  public isURLAllowed(url: string): boolean {
+    const allowedDomains = [
+      'localhost:8081',
+      'localhost:9099',
+      'firestore.googleapis.com',
+      'identitytoolkit.googleapis.com',
+      'securetoken.googleapis.com',
+      'api.anthropic.com',
+      'accounts.google.com'
+    ];
+
+    try {
+      const urlObj = new URL(url);
+      const hostWithPort = urlObj.port ? `${urlObj.hostname}:${urlObj.port}` : urlObj.hostname;
+      
+      return allowedDomains.some(domain => 
+        hostWithPort === domain || 
+        hostWithPort.endsWith(`.${domain}`) ||
+        urlObj.hostname.endsWith(domain)
+      );
+    } catch (error) {
+      console.error('Invalid URL provided to isURLAllowed:', url);
+      return false;
+    }
   }
 }
 

@@ -1,38 +1,18 @@
 const express = require('express');
 const fetch = require('node-fetch');
-const rateLimit = require('express-rate-limit');
-const slowDown = require('express-slow-down');
+// const rateLimit = require('express-rate-limit');
+// const slowDown = require('express-slow-down');
 const JWTService = require('../services/JWTService');
 const DatabaseLogger = require('../services/DatabaseLogger');
 const { authenticateToken, requireAdmin, trackUserActivity, checkConcurrentSessions } = require('../middleware/auth');
+
+// NEW: Firebase Admin for Auth Bridge
+const admin = require('../firebaseAdmin');
+const jwt = require('jsonwebtoken');
+
 const router = express.Router();
 
-// Rate limiting for auth endpoints - הגנה מפני Brute Force
-const authRateLimit = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 דקות
-  max: 10, // מקסימום 10 ניסיונות לכל IP ב-15 דקות
-  message: {
-    error: 'יותר מדי ניסיונות התחברות. נסה שוב בעוד 15 דקות.',
-    retryAfter: '15 minutes'
-  },
-  standardHeaders: true,
-  legacyHeaders: false,
-  // לא לחסום לגמרי, אלא לעכב
-  skip: (req) => false
-});
-
-// Progressive delay - השהיה הדרגתית
-const authSlowDown = slowDown({
-  windowMs: 15 * 60 * 1000, // 15 דקות
-  delayAfter: 3, // אחרי 3 ניסיונות התחל עכבות
-  delayMs: () => 500, // עכבה קבועה של 500ms
-  maxDelayMs: 5000, // מקסימום 5 שניות עכבה
-  message: {
-    error: 'זוהו ניסיונות חוזרים. המערכת מעכבת בקשות.',
-    slowDown: true
-  },
-  validate: { delayMs: false } // השבתת האזהרה
-});
+// Rate limiting and slow down moved to global mounting in server.js for specific endpoints
 
 // Middleware לניטור ולוגים מתקדמים
 const authLogger = (req, res, next) => {
@@ -55,8 +35,7 @@ const authLogger = (req, res, next) => {
 
 // Apply security middleware to all auth routes
 router.use(authLogger);
-router.use(authRateLimit);
-router.use(authSlowDown);
+// Note: rate limiters are mounted per-route in server.js
 
 // Google OAuth endpoint - מאובטח עם Rate Limiting ו-JWT מלא
 router.post('/google', async (req, res) => {
@@ -533,5 +512,202 @@ router.post('/device-info', authLogger, (req, res) => {
     }
   });
 });
+
+// ===== NEW: AUTH BRIDGE ENDPOINTS =====
+
+const ACCESS_TTL_MS = 60 * 60 * 1000; // 1 hour
+
+/**
+ * Auth Bridge - מחליף Firebase ID Token ב-JWT
+ * POST /api/auth/exchange
+ */
+router.post('/exchange', async (req, res) => {
+  try {
+    const { idToken } = req.body;
+    
+    if (!idToken) {
+      return res.status(400).json({ 
+        error: 'idToken required',
+        message: 'Firebase ID Token is required for JWT exchange'
+      });
+    }
+
+    console.log('🔄 Auth Exchange: Verifying Firebase ID Token...');
+    
+    // 🔧 Dev bypass for MockAuth
+    if (process.env.NODE_ENV === 'development' && idToken === 'mock-id-token') {
+      console.log('🔧 Dev bypass: Using MockAuth token');
+      const payload = {
+        userId: 'dev-user',
+        email: 'dev@taskflow.com',
+        name: 'Dev Developer',
+        scope: 'full-access',
+        provider: 'mock'
+      };
+
+      // יצירת Access Token
+      const accessToken = jwt.sign(
+        { ...payload, typ: 'access' },
+        process.env.JWT_SECRET || 'taskflow-super-secret-key-2025',
+        { expiresIn: '1h', issuer: 'TaskFlow-Server', audience: 'TaskFlow-Client' }
+      );
+      
+      // יצירת Refresh Token
+      const refreshToken = jwt.sign(
+        { ...payload, typ: 'refresh' },
+        process.env.JWT_REFRESH_SECRET || 'taskflow-refresh-secret-2025',
+        { expiresIn: '30d', issuer: 'TaskFlow-Server', audience: 'TaskFlow-Client' }
+      );
+
+      console.log('✅ Dev bypass: JWT tokens generated successfully');
+
+      return res.json({ 
+        accessToken,
+        refreshToken,
+        expiresInMs: ACCESS_TTL_MS,
+        user: payload
+      });
+    }
+    
+    // ✅ רגיל: אימות מול Firebase/Emulator
+    const decoded = await admin.auth().verifyIdToken(idToken);
+    
+    console.log(`✅ Auth Exchange: Token verified for user ${decoded.email}`);
+    
+    const payload = {
+      userId: decoded.uid,
+      email: decoded.email || null,
+      name: decoded.name || decoded.email?.split('@')[0] || 'User',
+      scope: 'full-access',
+      provider: 'firebase'
+    };
+
+    // יצירת Access Token
+    const accessToken = jwt.sign(
+      { ...payload, typ: 'access' },
+      process.env.JWT_SECRET || 'taskflow-super-secret-key-2025',
+      { expiresIn: '1h', issuer: 'TaskFlow-Server', audience: 'TaskFlow-Client' }
+    );
+    
+    // יצירת Refresh Token
+    const refreshToken = jwt.sign(
+      { ...payload, typ: 'refresh' },
+      process.env.JWT_REFRESH_SECRET || 'taskflow-refresh-secret-2025',
+      { expiresIn: '30d', issuer: 'TaskFlow-Server', audience: 'TaskFlow-Client' }
+    );
+
+    console.log('✅ Auth Exchange: JWT tokens generated successfully');
+
+    return res.json({ 
+      accessToken,
+      refreshToken,
+      expiresInMs: ACCESS_TTL_MS,
+      user: payload
+    });
+    
+  } catch (error) {
+    console.error('❌ Auth Exchange failed:', error.message);
+    
+    return res.status(401).json({ 
+      error: 'invalid idToken',
+      message: 'Failed to verify Firebase ID Token',
+      details: process.env.NODE_ENV === 'development' ? error.message : undefined
+    });
+  }
+});
+
+/**
+ * Refresh JWT Access Token (Auth Bridge version)
+ * POST /api/auth/refresh
+ */
+router.post('/refresh', async (req, res) => {
+  try {
+    const { refreshToken } = req.body;
+    
+    if (!refreshToken) {
+      return res.status(400).json({ 
+        error: 'refreshToken required' 
+      });
+    }
+
+    console.log('🔄 Auth Refresh: Verifying refresh token...');
+    
+    const decoded = jwt.verify(
+      refreshToken, 
+      process.env.JWT_REFRESH_SECRET || 'taskflow-refresh-secret-2025'
+    );
+    
+    if (decoded.typ !== 'refresh') {
+      throw new Error('Invalid token type');
+    }
+    
+    // יצירת Access Token חדש
+    const newAccessToken = jwt.sign(
+      { 
+        userId: decoded.userId, 
+        email: decoded.email || null,
+        name: decoded.name || 'User',
+        scope: 'full-access',
+        provider: decoded.provider || 'firebase',
+        typ: 'access' 
+      },
+      process.env.JWT_SECRET || 'taskflow-super-secret-key-2025',
+      { expiresIn: '1h', issuer: 'TaskFlow-Server', audience: 'TaskFlow-Client' }
+    );
+    
+    console.log('✅ Auth Refresh: New access token generated');
+    
+    return res.json({ 
+      accessToken: newAccessToken,
+      expiresInMs: ACCESS_TTL_MS 
+    });
+    
+  } catch (error) {
+    console.error('❌ Auth Refresh failed:', error.message);
+    
+    return res.status(401).json({ 
+      error: 'invalid refresh token',
+      message: 'Refresh token is invalid or expired' 
+    });
+  }
+});
+
+/**
+ * Middleware להגנה על API endpoints (Auth Bridge version)
+ */
+function requireAuthBridge(req, res, next) {
+  const authHeader = req.headers.authorization || '';
+  const token = authHeader.startsWith('Bearer ') ? authHeader.slice(7) : null;
+  
+  if (!token) {
+    return res.status(401).json({ 
+      error: 'authorization required',
+      message: 'Bearer token missing' 
+    });
+  }
+  
+  try {
+    const decoded = jwt.verify(
+      token, 
+      process.env.JWT_SECRET || 'taskflow-super-secret-key-2025'
+    );
+    
+    if (decoded.typ !== 'access') {
+      throw new Error('Invalid token type');
+    }
+    
+    req.user = decoded;
+    return next();
+    
+  } catch (error) {
+    return res.status(401).json({ 
+      error: 'invalid token',
+      message: 'Access token is invalid or expired' 
+    });
+  }
+}
+
+// Export middleware יחד עם router
+router.requireAuthBridge = requireAuthBridge;
 
 module.exports = router;

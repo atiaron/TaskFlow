@@ -1,4 +1,3 @@
-/* cspell:disable */
 import React, { useState, useEffect, useRef } from 'react';
 import { ThemeProvider, createTheme } from '@mui/material/styles';
 import { 
@@ -6,457 +5,206 @@ import {
   Container, 
   CircularProgress, 
   Box, 
-  Typography, 
-  Alert,
-  Snackbar,
-  Chip
+  Typography 
 } from '@mui/material';
-import { 
-  WifiOff as OfflineIcon,
-  Wifi as OnlineIcon,
-  Warning as WarningIcon 
-} from '@mui/icons-material';
 import { User } from './types';
-import { AuthService } from './services'; // עודכן להשתמש בservice injector
-import { EnhancedClaudeService } from './services/EnhancedClaudeService';
-import { SecurityManager } from './services/SecurityManager';
-import { SyncManager } from './services/SyncManager';
-import { RealTimeSyncService } from './services/RealTimeSyncService';
 import LoginScreen from './components/LoginScreen';
-import MainNavigation from './components/MainNavigation';
 import TaskList from './components/TaskList';
-import ChatInterface from './components/ChatInterface';
-import SessionManager from './components/SessionManager';
-import CalendarView from './components/CalendarView';
 import ErrorBoundary from './components/ErrorBoundary';
-import LoadingScreen from './components/LoadingScreen';
-import SystemStatus from './components/SystemStatus';
-import QuickStats from './components/QuickStats';
-import PWAInstallButton from './components/PWAInstallButton';
-import NetworkStatus from './components/NetworkStatus';
-import { usePWA } from './hooks/usePWA';
+import AuthProvider from './services/AuthProvider';
+import DebugBar from './components/DebugBar';
 
+// Simple theme
 const theme = createTheme({
-  direction: 'rtl',
   palette: {
-    mode: 'light',
-    primary: { 
-      main: '#4A90E2',
-      light: '#6BA3E8',
-      dark: '#3A7BD5'
-    },
-    secondary: { 
-      main: '#7ED321',
-      light: '#9BDD47',
-      dark: '#6BB51A'
-    },
-    background: {
-      default: '#FAFBFC',
-      paper: '#FFFFFF'
-    },
-    text: {
-      primary: '#2C3E50',
-      secondary: '#7F8C8D'
-    }
-  },
-  typography: {
-    fontFamily: '"SF Pro Display", "Segoe UI", "Roboto", "Arial", sans-serif',
-    h4: {
-      fontWeight: 600,
-      fontSize: '1.5rem'
-    },
-    h6: {
-      fontWeight: 500,
-      fontSize: '1.1rem'
-    },
-    body1: {
-      fontSize: '0.95rem'
-    },
-    body2: {
-      fontSize: '0.85rem'
-    }
-  },
-  shape: {
-    borderRadius: 12
-  },
-  components: {
-    MuiPaper: {
-      styleOverrides: {
-        root: {
-          boxShadow: '0 2px 8px rgba(0,0,0,0.04)',
-          border: '1px solid #F1F3F4'
-        }
-      }
-    },
-    MuiButton: {
-      styleOverrides: {
-        root: {
-          textTransform: 'none',
-          borderRadius: 12,
-          fontWeight: 500
-        }
-      }
-    },
-    MuiChip: {
-      styleOverrides: {
-        root: {
-          borderRadius: 8,
-          fontWeight: 500
-        }
-      }
-    }
+    primary: { main: '#4A90E2' },
+    secondary: { main: '#7ED321' },
+    background: { default: '#FAFBFC', paper: '#FFFFFF' }
   }
 });
 
 function App() {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
-  const [currentTab, setCurrentTab] = useState<string>('tasks');
-  const [currentChatId, setCurrentChatId] = useState<string | null>(null);
-  const [showSessionManager, setShowSessionManager] = useState(false);
-  const [appError, setAppError] = useState<string | null>(null);
-  const [syncStatus, setSyncStatus] = useState<string>('disconnected');
-  const { isOnline, isInstalled } = usePWA();
-  
-  // Ref למניעת הרצה כפולה ב-React StrictMode
-  const initRef = useRef(false);
+  const [isGuestMode, setIsGuestMode] = useState(false);
+
+  // Focus management
+  const mainTitleRef = useRef<HTMLHeadingElement>(null);
 
   useEffect(() => {
-    // מניעת הרצה כפולה ב-React StrictMode
-    if (initRef.current) {
-      console.log('🔄 App already initialized, skipping duplicate initialization');
+    const startTime = performance.now();
+    console.log('🚀 App starting...');
+    console.log('🎯 Auth mode:', AuthProvider.getAuthMode());
+    
+    // Check if guest mode is active
+    const guestModeActive = sessionStorage.getItem('guestModeActive') === 'true';
+    const guestModeEnabled = process.env.REACT_APP_GUEST_MODE === '1';
+    
+    if (guestModeActive && guestModeEnabled) {
+      console.log('👤 Guest mode detected, skipping auth...');
+      setIsGuestMode(true);
+      setLoading(false);
+      document.body.classList.add('app-loaded');
+      const endTime = performance.now();
+      const loadTime = endTime - startTime;
+      console.log(`⚡ App loaded in guest mode in ${loadTime.toFixed(2)}ms`);
       return;
     }
-    initRef.current = true;
     
-    let mounted = true;
+    let unsubscribe = () => {};
+    let safetyTimer: ReturnType<typeof setTimeout>;
 
-    console.log('🚀 App starting - setting up auth listener and services');
+    // Fail-safe: גם אם שום callback לא נורה תוך 5 שניות – אל תיתקע על "טוען"
+    safetyTimer = setTimeout(() => {
+      console.warn('⏱️ Safety release: setLoading(false) after 5s');
+      setLoading(false);
+    }, 5000);
     
-    // הסתרת מסך הטעינה
-    const hideLoadingScreen = () => {
-      document.body.classList.add('app-loaded');
-    };
-
-    // 🔥 Setup Real-Time Sync Event Listeners
-    const setupSyncListeners = () => {
-      const handleSessionsUpdate = (event: any) => {
-        console.log('🔄 Sessions updated from sync:', event.detail);
-        if (mounted) setSyncStatus('connected');
-      };
-
-      const handleMessagesUpdate = (event: any) => {
-        console.log('📨 Messages updated from sync:', event.detail);
-      };
-
-      const handleSessionChange = (event: any) => {
-        console.log('🎯 Active session changed:', event.detail);
-        const { sessionId } = event.detail;
-        if (mounted) setCurrentChatId(sessionId);
-      };
-
-      const handleConflict = (event: any) => {
-        console.log('⚠️ Sync conflict detected:', event.detail);
-      };
-
-      // Add listeners
-      window.addEventListener('sync-sessions-updated', handleSessionsUpdate);
-      window.addEventListener('sync-messages-updated', handleMessagesUpdate);
-      window.addEventListener('sync-session-changed', handleSessionChange);
-      window.addEventListener('sync-conflict-detected', handleConflict);
-
-      // Return cleanup function
-      return () => {
-        window.removeEventListener('sync-sessions-updated', handleSessionsUpdate);
-        window.removeEventListener('sync-messages-updated', handleMessagesUpdate);
-        window.removeEventListener('sync-session-changed', handleSessionChange);
-        window.removeEventListener('sync-conflict-detected', handleConflict);
-      };
-    };
-
-    const initializeAuth = async () => {
-      if (!mounted) return;
-      try {
-        console.log('🔍 Initializing auth service...');
-        await AuthService.initializeGoogleAuth();
-        if (mounted) {
-          console.log('✅ Auth service initialized');
-          
-          const unsubscribe = AuthService.onAuthStateChanged(async (user: User | null) => {
-            if (!mounted) return;
-            
-            setUser(user);
-            
-            if (user) {
-              try {
-                // Initialize Real-Time Sync only in production
-                const isDev = process.env.NODE_ENV === 'development' ||
-                             process.env.REACT_APP_IS_DEV_MODE === 'true' ||
-                             window.location.hostname === 'localhost';
-                
-                if (!isDev) {
-                  console.log('🔄 Initializing real-time sync for user:', user.id);
-                  SyncManager.initializeSync(user.id);
-                  
-                  // Get RealTimeSyncService instance and inject getCurrentUser
-                  const syncService = RealTimeSyncService.getInstance();
-                  syncService.setGetCurrentUser(() => AuthService.getCurrentUser());
-                  console.log('✅ Real-time sync initialized successfully!');
-                } else {
-                  console.log('🔧 Development mode - setting up mock sync');
-                  // Even in dev mode, inject getCurrentUser for potential sync operations
-                  const syncService = RealTimeSyncService.getInstance();
-                  syncService.setGetCurrentUser(() => AuthService.getCurrentUser());
-                }
-                
-                console.log('✅ All services ready for user:', user.email || user.id);
-              } catch (error) {
-                console.error('❌ Failed to initialize services:', error);
-                if (mounted) setAppError('שגיאה באתחול השירותים');
-              }
-            } else {
-              console.log('🧹 Cleaning up services for logged out user');
-              SyncManager.cleanup();
-              RealTimeSyncService.getInstance().cleanup();
-            }
-            
-            if (mounted) {
-              setLoading(false);
-              hideLoadingScreen();
-            }
-          });
-          
-          return () => unsubscribe?.();
-        }
-      } catch (error) {
-        console.error('Auth initialization failed:', error);
-        if (mounted) {
+    // Initialize auth and set up listener
+    AuthProvider.initializeGoogleAuth().then(() => {
+      console.log('✅ Auth initialized');
+      
+      // Set up auth state listener
+      unsubscribe = AuthProvider.onAuthStateChanged((user) => {
+        try {
+          setUser(user);
+          if (user) {
+            console.log('✅ User logged in:', user.email);
+          } else {
+            console.log('👤 No user logged in');
+          }
+        } catch (err) {
+          console.error('❌ Error setting user state:', err);
+        } finally {
+          // תמיד לשחרר loading
           setLoading(false);
-          hideLoadingScreen();
+          clearTimeout(safetyTimer);
+          
+          // **FIX: הסתר את הHTML loading screen**
+          document.body.classList.add('app-loaded');
+          
+          // Calculate load time correctly
+          const endTime = performance.now();
+          const loadTime = endTime - startTime;
+          if (loadTime > 0) {
+            console.log(`⚡ App loaded in ${loadTime.toFixed(2)}ms`);
+          }
         }
+      });
+      
+    }).catch((error) => {
+      console.error('❌ Auth initialization failed:', error);
+      setLoading(false);
+      clearTimeout(safetyTimer);
+      
+      // **FIX: הסתר את הHTML loading screen גם בשגיאה**
+      document.body.classList.add('app-loaded');
+      
+      // Calculate load time even on error
+      const endTime = performance.now();
+      const loadTime = endTime - startTime;
+      if (loadTime > 0) {
+        console.log(`⚡ App failed to load in ${loadTime.toFixed(2)}ms`);
       }
-    };
-
-    // Setup listeners first
-    const cleanupListeners = setupSyncListeners();
-    
-    // Then initialize auth
-    let authCleanup: (() => void) | undefined;
-    initializeAuth().then(cleanup => {
-      authCleanup = cleanup;
     });
-    
-    return () => { 
-      mounted = false;
-      cleanupListeners?.();
-      authCleanup?.();
+
+    return () => {
+      clearTimeout(safetyTimer);
+      unsubscribe && unsubscribe();
     };
   }, []);
 
-  const handleTasksUpdate = () => {
-    // הפונקציה הזו לא צריכה לעשות כלום יותר!
-    // Firestore real-time listeners יטפלו בהכל
-    console.log('📝 Tasks updated - Firestore will handle the sync');
-  };
-
-  const handleTaskCreated = (task: any) => {
-    console.log('🆕 New task created:', task.title);
-    // אפשר להוסיף התראות או אנימציות כאן
-  };
-
-  const handleChatSessionChange = (session: any) => {
-    const sessionId = session?.id || session;
-    setCurrentChatId(sessionId);
-    if (sessionId) {
-      setCurrentTab('chat');
+  // Focus management - focus on main title when user logs in or enters guest mode
+  useEffect(() => {
+    if ((user || isGuestMode) && !loading && mainTitleRef.current) {
+      mainTitleRef.current.focus();
     }
-  };
+  }, [user, isGuestMode, loading]);
 
   if (loading) {
     return (
-      <ErrorBoundary>
-        <ThemeProvider theme={theme}>
-          <CssBaseline />
-          <LoadingScreen 
-            message="מאתחל שירותים ומערכות אבטחה..."
-            showProgress={false}
-          />
-        </ThemeProvider>
-      </ErrorBoundary>
-    );
-  }
-
-  if (appError) {
-    return (
       <ThemeProvider theme={theme}>
         <CssBaseline />
-        <Container sx={{ 
-          display: 'flex', 
-          justifyContent: 'center', 
-          alignItems: 'center', 
-          height: '100vh',
-          flexDirection: 'column',
-          gap: 2
-        }}>
-          <Alert severity="error" sx={{ mb: 2 }}>
-            {appError}
-          </Alert>
-          <Typography variant="body2">
-            אנא רענן את הדף או נסה שוב מאוחר יותר
+        <Box
+          display="flex"
+          justifyContent="center"
+          alignItems="center"
+          minHeight="100vh"
+          flexDirection="column"
+        >
+          <CircularProgress size={60} />
+          <Typography variant="h6" sx={{ mt: 2 }}>
+            טוען את TaskFlow...
           </Typography>
-        </Container>
-      </ThemeProvider>
-    );
-  }
-
-  if (!user) {
-    return (
-      <ThemeProvider theme={theme}>
-        <CssBaseline />
-        <Box sx={{ position: 'relative', minHeight: '100vh' }}>
-          {/* Network Status */}
-          <NetworkStatus />
-          
-          {/* Main Content */}
-          <Box sx={{ pt: !isOnline ? '48px' : 0 }}>
-            <LoginScreen />
-            
-            {/* PWA Install Button בדף הlogin */}
-            {!isInstalled && (
-              <Box
-                sx={{
-                  position: 'fixed',
-                  bottom: 20,
-                  right: 20,
-                  zIndex: 1000
-                }}
-              >
-                <PWAInstallButton />
-              </Box>
-            )}
-          </Box>
+          <Typography variant="body2" sx={{ mt: 1, opacity: 0.7 }}>
+            מצב: {AuthProvider.getAuthMode()}
+          </Typography>
         </Box>
       </ThemeProvider>
     );
   }
 
-  const renderCurrentTab = () => {
-    switch (currentTab) {
-      case 'tasks':
-        return (
-          <Box>
-            <QuickStats user={user} isCompact={false} />
-            <TaskList 
-              user={user} 
-              onTasksUpdate={handleTasksUpdate}
-              onTaskCreated={handleTaskCreated}
-              enableAICreation={true}
-              enableSearch={true}
-              variant="full"
-            />
-          </Box>
-        );
-      case 'chat':
-        return (
-          <Box sx={{ position: 'relative', height: '100vh' }}>
-            <ChatInterface 
-              user={user} 
-              onTasksUpdate={handleTasksUpdate}
-              sessionId={currentChatId || undefined}
-              onSessionChange={handleChatSessionChange}
-            />
-            {showSessionManager && (
-              <SessionManager
-                open={showSessionManager}
-                onSessionSelect={handleChatSessionChange}
-                onClose={() => setShowSessionManager(false)}
-                onSessionCreate={() => setCurrentChatId(null)}
-                selectedSessionId={currentChatId || undefined}
-              />
-            )}
-          </Box>
-        );
-      case 'sessions':
-        return (
-          <SessionManager
-            open={true}
-            onSessionSelect={handleChatSessionChange}
-            onClose={() => setCurrentTab('chat')}
-            onSessionCreate={() => setCurrentChatId(null)}
-            selectedSessionId={currentChatId || undefined}
-          />
-        );
-      case 'calendar':
-        return <CalendarView user={user} />;
-      default:
-        return (
-          <TaskList 
-            user={user} 
-            onTasksUpdate={handleTasksUpdate}
-            onTaskCreated={handleTaskCreated}
-          />
-        );
-    }
-  };
+  // Show login screen if no user AND not in guest mode
+  if (!user && !isGuestMode) {
+    return (
+      <ThemeProvider theme={theme}>
+        <CssBaseline />
+        {/* אזור הכרזה גלובלי לשגיאות/הודעות */}
+        <div 
+          id="a11y-announcer" 
+          role="status" 
+          aria-live="polite" 
+          aria-atomic="true" 
+          style={{
+            position: 'absolute',
+            left: '-9999px',
+            width: '1px',
+            height: '1px',
+            overflow: 'hidden'
+          }} 
+        />
+        <LoginScreen />
+      </ThemeProvider>
+    );
+  }
 
   return (
     <ErrorBoundary>
       <ThemeProvider theme={theme}>
         <CssBaseline />
-        <Box sx={{ minHeight: '100vh', bgcolor: 'background.default', position: 'relative' }}>
-          {/* Network Status */}
-          <NetworkStatus />
-          
-          {/* אינדיקטור מצב פיתוח */}
-          <Box
-            sx={{
-              position: 'fixed',
-              top: isOnline ? 8 : 48,
-              right: 8,
-              zIndex: 1200,
-              display: 'flex',
-              gap: 1,
-              alignItems: 'center'
-            }}
-          >
-            {process.env.NODE_ENV === 'development' && (
-              <Chip
-                label="DEV"
-                color="secondary"
-                size="small"
-                sx={{ fontSize: '0.75rem' }}
-              />
-            )}
-            <SystemStatus isOnline={isOnline} user={user} />
-            
-            {/* PWA Install Button למשתמשים מחוברים */}
-            {!isInstalled && (
-              <PWAInstallButton />
-            )}
+        {/* אזור הכרזה גלובלי לשגיאות/הודעות */}
+        <div 
+          id="a11y-announcer" 
+          role="status" 
+          aria-live="polite" 
+          aria-atomic="true" 
+          style={{
+            position: 'absolute',
+            left: '-9999px',
+            width: '1px',
+            height: '1px',
+            overflow: 'hidden'
+          }} 
+        />
+        <Container maxWidth="lg">
+          <Box sx={{ py: 3 }}>
+            <Typography 
+              variant="h4" 
+              gutterBottom
+              ref={mainTitleRef}
+              tabIndex={-1}
+              component="h1"
+            >
+              {user ? `שלום ${user.display_name || user.email}!` : 'שלום אורח!'}
+            </Typography>
+            <Typography variant="body2" sx={{ mb: 2, opacity: 0.7 }}>
+              מצב אותנטיקציה: {AuthProvider.getAuthMode()} | 
+              {user ? `משתמש: ${user.email} | ID: ${user.id}` : 'מצב אורח'}
+            </Typography>
+            <TaskList user={user || null} />
           </Box>
-          
-          <Box sx={{ paddingTop: isOnline ? 0 : '48px' }}>
-            {renderCurrentTab()}
-          </Box>
-          
-          <MainNavigation 
-            currentTab={currentTab} 
-            onTabChange={setCurrentTab}
-            user={user}
-          />
-          
-          {/* Snackbar לhודעות מערכת */}
-          <Snackbar
-            open={!!appError}
-            autoHideDuration={6000}
-            onClose={() => setAppError(null)}
-            anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
-          >
-            <Alert onClose={() => setAppError(null)} severity="error">
-              {appError}
-            </Alert>
-          </Snackbar>
-        </Box>
+        </Container>
+        <DebugBar />
       </ThemeProvider>
     </ErrorBoundary>
   );

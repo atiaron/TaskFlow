@@ -168,6 +168,8 @@ export interface User {
   created_at: Date;
   last_active: Date;
   plan: UserPlan;
+  // הוספת טוקן לתמיכה ב-authentication
+  token?: string;
   settings: UserSettings;
   preferences: UserPreferences;
   usage_stats: UsageStats;

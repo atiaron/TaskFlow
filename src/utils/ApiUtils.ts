@@ -9,7 +9,11 @@ export class ApiUtils {
     if (process.env.NODE_ENV === 'development' || process.env.REACT_APP_IS_DEV_MODE === 'true') {
       // אם יש proxy ב-craco, נשתמש ב-relative URLs
       // אחרת נשתמש בURL מלא
-      return process.env.REACT_APP_API_URL || 'http://localhost:4000';
+      const useProxy = process.env.REACT_APP_USE_PROXY !== 'false';
+      if (useProxy) {
+        return '/api'; // השתמש בproxy relative URL
+      }
+      return process.env.REACT_APP_API_URL || 'http://localhost:3333/api';
     }
     
     // בסביבת פרודקשן - נשתמש ב-Vercel Functions או external API
@@ -18,6 +22,13 @@ export class ApiUtils {
                            'https://taskflow-backend.vercel.app';
     
     return productionApiUrl;
+  }
+
+  /**
+   * Export simple getApiUrl for axios baseURL
+   */
+  static getApiUrl(): string {
+    return this.getBaseUrl();
   }
 
   /**
@@ -66,9 +77,9 @@ export class ApiUtils {
       console.error('🚨 API Call Failed:', { endpoint, url, error });
       
       // בdev, אם הקריאה נכשלה דרך proxy, ננסה ישירות
-      if (process.env.NODE_ENV === 'development' && !url.includes('localhost:4000')) {
+      if (process.env.NODE_ENV === 'development' && !url.includes('localhost:3333')) {
         console.log('🔄 Retrying with direct localhost URL...');
-        const directUrl = `http://localhost:4000${endpoint}`;
+        const directUrl = `http://localhost:3333${endpoint}`;
         return fetch(directUrl, options);
       }
       

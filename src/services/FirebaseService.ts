@@ -24,6 +24,53 @@ import SecurityService from './SecurityService';
 
 export class FirebaseService {
   
+  // 🔗 CONNECTION TESTING
+  
+  /**
+   * בדיקת חיבור ל-Firestore
+   */
+  static async testConnection(): Promise<boolean> {
+    try {
+      console.log('🔍 Testing Firestore connection...');
+      
+      // ניסיון לקריאה פשוטה מFirestore
+      const testCollection = collection(db, 'test');
+      const testQuery = query(testCollection, limitToLast(1));
+      
+      // ביצוע הקריאה (לא משנה אם יש נתונים או לא)
+      await getDocs(testQuery);
+      
+      console.log('✅ Firestore connection successful');
+      return true;
+    } catch (error: any) {
+      console.error('❌ Firestore connection failed:', error);
+      
+      // בדיקה אם זו שגיאה של emulator
+      if (error.message?.includes('fetch') || error.message?.includes('CORS')) {
+        console.error('🚨 This might be a CORS/CSP issue with Firebase Emulator');
+        console.log('💡 Try running: firebase emulators:start --only firestore');
+      }
+      
+      return false;
+    }
+  }
+
+  /**
+   * אתחול ובדיקת מערכת Firebase
+   */
+  static async initialize(): Promise<boolean> {
+    console.log('🔥 Initializing Firebase Service...');
+    
+    // בדיקת חיבור
+    const isConnected = await this.testConnection();
+    
+    if (!isConnected) {
+      console.warn('⚠️ Firebase connection failed - some features may not work');
+    }
+    
+    return isConnected;
+  }
+  
   // 🎯 TASKS OPERATIONS
   
   static async addTask(userId: string, task: Omit<Task, 'id'>): Promise<string> {

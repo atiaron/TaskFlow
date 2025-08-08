@@ -49,7 +49,7 @@ module.exports = {
     // Proxy כל קריאה ל-/api אל הbackend המקומי
     proxy: {
       '/api': {
-        target: 'http://localhost:4000',
+        target: 'http://localhost:3333',
         changeOrigin: true,
         secure: false,
         logLevel: 'debug'
@@ -59,12 +59,12 @@ module.exports = {
     // Headers - CSP רופף רק בdev
     headers: process.env.NODE_ENV === 'development' ? {
       'Content-Security-Policy': [
-        "default-src 'self' http://localhost:4000 http://127.0.0.1:4000",
-        "script-src 'self' 'unsafe-inline' 'unsafe-eval' http://localhost:4000 https://accounts.google.com https://www.gstatic.com",
+        "default-src 'self' http://localhost:3333 http://127.0.0.1:3333",
+        "script-src 'self' 'unsafe-inline' 'unsafe-eval' http://localhost:3333 https://accounts.google.com https://www.gstatic.com",
         "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
         "font-src 'self' https://fonts.gstatic.com",
         "img-src 'self' data: blob: https:",
-        "connect-src 'self' http://localhost:4000 http://127.0.0.1:4000 ws://localhost:3000 wss://localhost:3000 https://accounts.google.com https://www.google.com",
+        "connect-src 'self' http://localhost:3333 http://127.0.0.1:3333 ws://localhost:3000 wss://localhost:3000 https://accounts.google.com https://www.google.com",
         "frame-ancestors 'none'",
         "base-uri 'self'"
       ].join('; '),
