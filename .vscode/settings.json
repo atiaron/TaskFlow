@@ -27,5 +27,30 @@
   "terminal.integrated.windowsEnableConpty": true,
   "terminal.integrated.inheritEnv": true,
   "terminal.integrated.env.windows": {},
-  "terminal.integrated.cwd": "${workspaceFolder}"
+  "terminal.integrated.cwd": "${workspaceFolder}",
+  "editor.suggestSelection": "first",
+  "editor.tabCompletion": "on",
+  "editor.quickSuggestions": {
+    "other": true,
+    "comments": true,
+    "strings": true
+  },
+  "editor.acceptSuggestionOnEnter": "on",
+  "editor.snippetSuggestions": "top",
+  "claude-code.enabled": true,
+  "claude-code.autoComplete": true,
+  "claude-code.contextWindow": 8000,
+  "claude-code.model": "claude-3-sonnet-20240229",
+  "claude-code.temperature": 0.1,
+  "claude-code.maxTokens": 4000,
+  "files.associations": {
+    "*.js": "javascript",
+    "*.ts": "typescript",
+    "*.jsx": "javascriptreact",
+    "*.tsx": "typescriptreact",
+    "*.py": "python",
+    "*.html": "html",
+    "*.css": "css",
+    "*.json": "json"
+  }
 }

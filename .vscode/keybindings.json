@@ -1,0 +1,22 @@
+[
+    {
+        "key": "ctrl+alt+c",
+        "command": "claude-code.generate",
+        "when": "editorTextFocus"
+    },
+    {
+        "key": "ctrl+alt+e",
+        "command": "claude-code.explain",
+        "when": "editorTextFocus"
+    },
+    {
+        "key": "ctrl+alt+f",
+        "command": "claude-code.fix",
+        "when": "editorTextFocus"
+    },
+    {
+        "key": "ctrl+alt+t",
+        "command": "claude-code.test",
+        "when": "editorTextFocus"
+    }
+]

@@ -1,0 +1,18 @@
+{
+  "app.title": "TaskFlow",
+  "actions.add": "הוסף",
+  "actions.addTask": "הוסף משימה",
+  "actions.close": "סגור",
+  "actions.undo": "בטל",
+  "views.starred": "מועדפים",
+  "views.completed": "בוצעו",
+  "completed.section": "בוצעו ({count})",
+  "toast.starred": "סומן כמועדף — יוצג למעלה",
+  "toast.cleared": "נוקו {count} משימות",
+  "dialog.createTask.title": "יצירת משימה",
+  "labels.reminder": "תזכורת",
+  "labels.completed": "הושלמה",
+  "aria.addTask": "הוסף משימה",
+  "aria.closeDialog": "סגור דיאלוג",
+  "placeholder.addDescription": "הוסף תיאור…"
+}

@@ -1,0 +1,1034 @@
+/* ====== LIST CARD ====== */
+.google-tasks-wrapper .gt-list-card{
+  background: var(--color-surface);
+  border-radius: var(--radius-card,20px);
+  box-shadow: 0 1px 3px var(--color-press, rgba(0,0,0,.06));
+  padding: 12px 12px 8px;
+  margin: 12px 12px 0;
+}
+.google-tasks-wrapper .gt-list-header{
+  position: relative;
+  height: 40px;
+  display: grid;
+  grid-template-columns: 40px 40px 1fr; /* dots | sort | title */
+  align-items: center;
+  gap: 4px;
+}
+.google-tasks-wrapper .gt-list-title{
+  justify-self: end; /* RTL: title on right */
+  font: 500 16px/1.2 var(--font, system-ui, -apple-system, "Segoe UI", Roboto);
+  color: var(--color-text);
+}
+.google-tasks-wrapper .gt-icon{
+  width: 40px; height: 40px; border: 0; background: transparent;
+  border-radius: 12px; font-size: 18px; color: var(--color-muted);
+  cursor: pointer; transition: background .15s ease, color .15s ease;
+}
+.google-tasks-wrapper .gt-icon:active{ background: var(--color-press); }
+
+
+/* ===== Toast (Snackbar) ===== */
+.google-tasks-wrapper .gt-toast {
+  position:absolute; left:12px; right:12px;
+  bottom:max(12px, env(safe-area-inset-bottom));
+  background:#202124; color:#E8EAED; border-radius:12px;
+  padding:12px 14px; display:flex; align-items:center; justify-content:space-between;
+  gap:16px; box-shadow:0 8px 24px rgba(0,0,0,.28);
+  transform: translateY(16px) scale(.98);
+  opacity:0;
+  transition: transform .22s cubic-bezier(.4,0,.2,1), opacity .22s ease;
+  z-index: 30;
+}
+.google-tasks-wrapper .gt-toast.is-open {
+  transform: translateY(0) scale(1);
+  opacity:1;
+}
+.google-tasks-wrapper .gt-toast__msg { font-size:15px; }
+.google-tasks-wrapper .gt-toast__action {
+  border:none; background:transparent; color:#AECBFA; font-weight:600; font-size:15px; cursor:pointer;
+}
+
+/* ===== “כל המשימות בוצעו” + סקשן בוצעו ===== */
+.google-tasks-wrapper .gt-all-done {
+  display:flex; flex-direction:column; align-items:center; justify-content:center;
+  gap:16px; color:#5F6368; min-height:180px; border-radius:16px;
+  background:#F6F7F9; border:1px solid #ECEFF1; text-align:center; padding:24px;
+}
+.google-tasks-wrapper .gt-all-done h3 {
+  margin:0; color:#202124; font-size:18px; font-weight:600;
+}
+.google-tasks-wrapper .gt-completed-toggle {
+  display:flex; align-items:center; justify-content:space-between;
+  width:100%; min-height:48px; border-radius:12px; padding:8px 12px; margin-top:8px;
+  color:#5F6368; background:#fff; border:1px solid #ECEFF1; font-size:15px;
+}
+.google-tasks-wrapper .gt-completed-toggle:hover { background:#F8F9FA; }
+
+/* ===== Completed Section Card (Accordion) ===== */
+.google-tasks-wrapper .gt-completed-card { margin-top:12px; }
+.google-tasks-wrapper .gt-section-header {
+  width:100%; display:flex; align-items:center; justify-content:space-between;
+  background:#fff; border:1px solid #ECEFF1; border-radius:12px; padding:10px 14px;
+  font-size:15px; color:#202124; cursor:pointer; text-align:right;
+}
+.google-tasks-wrapper .gt-section-header:hover { background:#F8F9FA; }
+.google-tasks-wrapper .gt-section-title { font-weight:500; }
+.google-tasks-wrapper .gt-caret { transition: transform .18s ease; }
+.google-tasks-wrapper .gt-caret.is-open { transform: rotate(180deg); }
+.google-tasks-wrapper .gt-completed-card .gt-list-body.is-collapsed { display:none; }
+
+/* ===== Title + Sub text wrapper ===== */
+/* (Deprecated legacy container .gt-title-wrap – kept only as temp alias below) */
+/* .google-tasks-wrapper .gt-title-wrap { display:flex; flex-direction:column; align-items:flex-start; gap:2px; flex:1; min-width:0; } */
+/* (Removed legacy inline .gt-sub small variant – unified block added later) */
+
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  .google-tasks-wrapper .gt-toast { transition:none; }
+}
+
+
+/* Clickable title area becomes a button for opening details sheet */
+.gt-title-btn {
+  background: transparent;
+  border: none;
+  padding: 0;
+  margin: 0;
+  text-align: right;
+  cursor: pointer;
+}
+.gt-title-btn:hover { background: transparent; }
+.gt-title-btn:focus-visible { outline: 2px solid var(--color-primary); outline-offset: 2px; border-radius: 8px; }
+
+/* (Removed duplicate completed state – unified at bottom) */
+
+/* כוכב צהוב */
+/* Use unified token (already defined above for row context) */
+/* .gt-star.is-on{ color:#FBC02D; } */
+
+
+/* ====== כרטיס רשימה כללי ====== */
+.gt-list-card{
+  background:#fff; border-radius:16px; padding:12px; box-shadow: 0 2px 8px rgba(0,0,0,.04);
+}
+.gt-list-header{
+  display:flex; align-items:center; gap:8px; margin-block-end:8px; position:relative;
+}
+.gt-icon{ width:40px;height:40px;border-radius:10px;border:none;background:transparent;cursor:pointer; }
+.gt-icon:hover{ background:#F1F3F4; }
+.gt-list-title{ margin-inline-start:auto; font-weight:600; color:#202124; }
+
+/* ====== כרטיס “בוצעו (N)” ====== */
+.gt-completed-card{
+  margin-top:12px; background:#fff; border-radius:16px; padding:12px; box-shadow: 0 2px 8px rgba(0,0,0,.04);
+}
+
+.gt-section-header{
+  display:flex; align-items:center; justify-content:space-between;
+  width:100%; background:transparent; border:none; padding:10px 6px; border-radius:12px; cursor:pointer;
+}
+.gt-section-header:hover{ background:#F7F8F9; }
+.gt-section-title{ font-weight:600; color:#202124; }
+.gt-caret{ transform:rotate(0deg); transition: transform .18s ease; }
+.gt-caret.is-open{ transform:rotate(180deg); }
+
+/* גוף רשימת הבוצעו – אנימציית אקורדיון קלה */
+.gt-list-body.is-collapsed{ max-height:0; overflow:hidden; }
+.gt-list-body.is-open{ max-height:999px; transition:max-height .18s ease; }
+
+/* --- Task Details Sheet --- */
+.google-tasks-wrapper.is-task-sheet-open { overflow: hidden; }
+
+.gt-task-sheet {
+  position: absolute;
+  inset-inline: 0;
+  bottom: 0;
+  background: var(--surface, #fff);
+  color: var(--color-text, #202124);
+  border-radius: 24px 24px 0 0;
+  box-shadow: 0 -20px 40px rgba(0,0,0,.14);
+  max-height: 90dvh;
+  padding: 12px 16px 16px;
+  display: grid;
+  grid-auto-rows: min-content;
+  gap: 8px;
+  direction: rtl;
+  transform: translateY(0);
+  transition: transform .2s ease-out;
+}
+
+.gt-task-sheet__top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-height: 36px;
+}
+.gt-task-sheet__list-name {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--color-text-secondary, #5f6368);
+  font-size: 13px;
+  margin-top: 4px;
+}
+.gt-chevron { transform: translateY(-1px); }
+
+.gt-task-title {
+  font-size: 22px;
+  line-height: 30px;
+  margin: 6px 0 2px;
+}
+.gt-task-title.is-completed {
+  color: #9aa0a6;
+  text-decoration: line-through;
+}
+.gt-task-meta {
+  color: var(--color-text-secondary, #5f6368);
+  font-size: 14px;
+  margin: 0 0 8px;
+}
+
+.gt-row-action {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 14px 8px;
+  border: 1px solid var(--color-card-border, #eceff1);
+  background: var(--surface-2, #f9fbff);
+  border-radius: 12px;
+  font-size: 16px;
+}
+.gt-row-action .gt-icon { opacity: .75; }
+
+.gt-task-sheet__spacer { height: 16px; }
+.gt-task-sheet__footer {
+  position: sticky;
+  bottom: 0;
+  background: linear-gradient(to top, rgba(255,255,255,1), rgba(255,255,255,0));
+  padding-top: 8px;
+}
+.gt-primary {
+  width: 100%;
+  padding: 14px 16px;
+  border-radius: 999px;
+  border: none;
+  background: var(--color-primary, #1a73e8);
+  color: #fff;
+  font-size: 16px;
+  font-weight: 500;
+}
+
+/* Existing inline action buttons retained */
+.google-tasks-wrapper .gt-task-sheet__actions-inline { display:flex; gap:12px; margin-top:16px; }
+.google-tasks-wrapper .gt-inline-btn { width:44px; height:44px; display:flex; align-items:center; justify-content:center; border:none; background:#F1F3F4; border-radius:12px; cursor:pointer; font-size:20px; }
+.google-tasks-wrapper .gt-inline-btn:hover { background:#E4E7EA; }
+.google-tasks-wrapper .gt-inline-btn.is-on.gt-star-btn { color: var(--color-accent-star); background:#FFF8E1; }
+.google-tasks-wrapper .gt-inline-btn.is-on.gt-complete-btn { color: var(--color-primary); background: var(--color-check-bg); }
+
+/* ===== Generic Sheet Base (used by sort sheet & future modals) ===== */
+/* We previously only had skin classes (e.g. .gt-sort-sheet) without a foundational positioning layer. */
+.google-tasks-wrapper .gt-sheet {
+  position: absolute;
+  inset-inline: 8px;
+  bottom: 8px;
+  background: var(--color-surface, #fff);
+  color: var(--color-text, #202124);
+  border-radius: 20px;
+  box-shadow: 0 8px 28px rgba(0,0,0,.18);
+  max-height: min(70dvh, 560px);
+  overflow: auto;
+  display: flex;
+  flex-direction: column;
+  transform: translateY(16px);
+  opacity: 0;
+  transition: transform .22s ease, opacity .22s ease;
+  z-index: 40;
+}
+.google-tasks-wrapper .gt-sheet.is-open { transform: translateY(0); opacity: 1; }
+
+@keyframes gt-sheet-pop {
+  0% { transform: translateY(12px); opacity: 0; }
+  100% { transform: translateY(0); opacity: 1; }
+}
+
+/* Unified wrapper constraints */
+.google-tasks-wrapper {
+  position: relative;
+  min-height: 100dvh;
+  max-width: 420px;
+  margin: 0 auto;
+  z-index: 0;
+}
+
+/* Unified overlay variants (attach is-open for visibility) */
+/* Overlays (אפלולית בלבד – בלי blur) */
+.google-tasks-wrapper .gt-sheet-overlay,
+.google-tasks-wrapper .gt-sort-overlay,
+.google-tasks-wrapper .gt-datetime-overlay,
+.google-tasks-wrapper .gt-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(32,33,36,0.44);
+  backdrop-filter: none;              /* היה blur(2px) – מבוטל */
+  -webkit-backdrop-filter: none;      /* תמיכה בוובקיט */
+  z-index: 20;                        /* מתחת ל-sheet */
+  opacity: 0;
+  transition: opacity .18s ease;
+}
+.google-tasks-wrapper .gt-sheet-overlay.is-open,
+.google-tasks-wrapper .gt-sort-overlay.is-open,
+.google-tasks-wrapper .gt-datetime-overlay.is-open,
+.google-tasks-wrapper .gt-overlay.is-open { opacity: 1; }
+
+/* שימור שכבות נכון: ה-Task Details מעל ה-overlay */
+.gt-task-sheet { 
+  z-index: 40;                        /* מעל overlay=20 */
+}
+
+/* מניעת גלילה מאחורי ה-sheet */
+.google-tasks-wrapper.is-task-sheet-open { 
+  overflow: hidden; 
+}
+
+/* Sort sheet structural helpers */
+.gt-sort-sheet .gt-sheet-header { padding: 14px 16px 6px; font-weight: 600; color: var(--text-primary,#202124); }
+.gt-sort-sheet .gt-sheet-body { padding: 4px 8px 12px; display: flex; flex-direction: column; gap: 2px; }
+.gt-row-link { display:flex; align-items:center; gap: var(--row-gap-inline, var(--space-3)); padding: var(--row-pad-block, var(--space-2)) var(--row-pad-inline, var(--space-3)); border-radius: var(--radius-row, 12px); font-size: var(--font-size-title,15px); line-height: var(--line-height-title,20px); font-weight: var(--weight-title,600); color:var(--color-text,#202124); background:transparent; border:0; width:100%; text-align:right; cursor:pointer; }
+.gt-row-link .ico { width:20px; text-align:center; }
+.gt-row-link[aria-pressed="true"] { background:#f1f3f4; }
+.gt-row-link:active { background:#e0e3e7; }
+@media (prefers-reduced-motion: reduce) { .gt-sheet, .gt-sheet-overlay { transition:none; } }
+
+/* === DateTime Sheet (Google Tasks-style) ================================== */
+.google-tasks-wrapper.is-datetime-open { overflow: hidden; }
+
+.gt-datetime-overlay {
+  position: absolute; inset: 0; background: rgba(32,33,36,.5);
+  opacity: 0; pointer-events: none; transition: opacity .18s ease-out;
+}
+.gt-datetime-overlay.is-open { opacity: 1; pointer-events: auto; }
+
+.gt-datetime {
+  position: absolute; inset-inline: 8px; bottom: 8px;
+  background: #F8F9FA; border-radius: 20px; box-shadow: 0 8px 24px rgba(0,0,0,.24);
+  transform: translateY(16px); opacity: 0; transition: transform .2s ease, opacity .2s ease;
+  max-width: 560px; margin-inline: auto; padding: 0; direction: rtl;
+}
+.gt-datetime.is-open { transform: translateY(0); opacity: 1; }
+@supports (padding: env(safe-area-inset-bottom)) {
+  .gt-datetime { padding-bottom: env(safe-area-inset-bottom); }
+}
+
+.gt-date-header {
+  display: grid; grid-template-columns: 48px 1fr 48px; align-items: center;
+  padding: 14px 12px 6px; border-radius: 20px 20px 0 0;
+}
+.gt-date-header .gt-nav {
+  width: 36px; height: 36px; border: none; border-radius: 10px; background: transparent; cursor: pointer;
+}
+.gt-date-header .gt-nav:focus-visible { outline: 2px solid var(--color-primary); outline-offset: 2px; }
+.gt-date-header .gt-title { text-align: center; font-size: 18px; font-weight: 600; }
+
+.gt-date-grid { padding: 4px 12px 12px; }
+.gt-dow {
+  display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px;
+  padding: 2px 0 6px; color: #5F6368; font-size: 12px; text-align: center;
+}
+.gt-days {
+  display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px;
+}
+.gt-day {
+  height: 42px; border-radius: 999px; font-size: 14px; display:flex; align-items:center; justify-content:center;
+  color: #202124; background: transparent; border: none; cursor: pointer;
+}
+.gt-day.is-out { color: #9AA0A6; }
+.gt-day.is-today { box-shadow: inset 0 0 0 1.5px #9AA0A6; border-radius: 999px; }
+.gt-day.is-selected { background: #29487d; color: #fff; }
+.gt-day:focus-visible { outline: 2px solid var(--color-primary); outline-offset: 2px; }
+
+.gt-date-rows {
+  border-top: 1px solid #E9EAEE; border-bottom: 1px solid #E9EAEE; background: #fff;
+}
+/* Override row-link spacing in date/time context */
+.gt-date-rows .gt-row-link {
+  display:flex; align-items:center; gap: 10px; padding: 14px 16px; font-size: 16px; cursor: pointer;
+}
+.gt-row-link .ico { width: 20px; text-align: center; opacity: .8; }
+.gt-row-link:active { background: #F1F3F4; }
+
+.gt-date-note { padding: 12px 16px; color:#5F6368; font-size: 14px; line-height: 1.35; }
+.gt-date-note a { color: var(--color-primary); text-decoration: none; }
+
+.gt-date-footer {
+  display:flex; justify-content: space-between; gap: 16px; padding: 10px 16px 14px; background: #F8F9FA; border-radius: 0 0 20px 20px;
+}
+.gt-btn-link {
+  border:none; background: transparent; color: var(--color-primary); font-weight: 600; font-size: 16px; padding: 8px 4px; cursor: pointer;
+}
+.gt-btn-link:disabled { opacity: .5; cursor: default; }
+
+@media (prefers-reduced-motion: reduce) {
+  .gt-datetime, .gt-datetime-overlay { transition: none; }
+}
+
+/* ===== Sort Sheet (skin) ===== */
+.google-tasks-wrapper .gt-sort-sheet { padding: 12px 12px 14px; }
+.google-tasks-wrapper .gt-sheet-header {
+  font: 500 14px/20px var(--font, system-ui, "Segoe UI", Roboto);
+  color: var(--color-text-secondary, #5f6368);
+  text-align: right;
+  margin: 4px 8px 12px;
+}
+.google-tasks-wrapper .gt-sort-options { display: grid; gap: 2px; }
+.google-tasks-wrapper .gt-sort-option {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  text-align: right;
+  padding: 14px 10px 14px 14px;
+  border: none;
+  background: transparent;
+  border-radius: 12px;
+  font: 400 16px/22px var(--font, system-ui, "Segoe UI", Roboto);
+  color: var(--color-text, #202124);
+  cursor: pointer;
+}
+.google-tasks-wrapper .gt-sort-option:focus-visible { outline: 2px solid var(--color-primary, #1a73e8); outline-offset: 2px; }
+.google-tasks-wrapper .gt-sort-option:hover { background: #f1f3f4; }
+.google-tasks-wrapper .gt-sort-option.is-selected { background: #e8f0fe; }
+.google-tasks-wrapper .gt-sort-label { pointer-events: none; }
+.google-tasks-wrapper .gt-checkmark { font-weight: 600; color: var(--color-primary, #1a73e8); }
+
+/* --- Overlay: בלי blur, שכבה אחידה --- */
+.google-tasks-wrapper .gt-sheet-overlay,
+.google-tasks-wrapper .gt-sort-overlay,
+.google-tasks-wrapper .gt-datetime-overlay,
+.google-tasks-wrapper .gt-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(32,33,36,0.44);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  z-index: 20;               /* overlay */
+  opacity: 0;
+  transition: opacity .18s ease;
+}
+.google-tasks-wrapper .gt-sheet-overlay.is-open,
+.google-tasks-wrapper .gt-sort-overlay.is-open,
+.google-tasks-wrapper .gt-datetime-overlay.is-open,
+.google-tasks-wrapper .gt-overlay.is-open {
+  opacity: 1;
+}
+
+/* --- Task Details: הפוך לעמוד מלא + מעל overlay --- */
+.gt-task-sheet {
+  position: absolute;
+  inset-inline: 0;
+  bottom: 0;
+  z-index: 40;               /* מעל overlay=20 */
+  transform: translateY(0);  /* stacking context */
+}
+.gt-task-sheet.is-full {
+  inset: 0;                  /* full screen */
+  height: 100%;
+  max-height: none;
+  border-radius: 0;          /* אין פינות במסך מלא */
+  overflow: auto;            /* גלילה פנימית */
+}
+
+/* --- Date/Time Picker: מעל ה-details --- */
+.gt-datetime {
+  position: absolute;
+  inset-inline: 8px;
+  bottom: 8px;
+  z-index: 50;               /* מעל task-sheet (40) וה-overlay (20) */
+  background: #F8F9FA;
+  border-radius: 20px;
+  box-shadow: 0 8px 24px rgba(0,0,0,.24);
+  transform: translateY(16px);
+  opacity: 0;
+  transition: transform .2s ease, opacity .2s ease;
+  max-width: 560px;
+}
+.gt-datetime.is-open {
+  transform: translateY(0);
+  opacity: 1;
+}
+
+/* --- Scroll Lock בעת מצבים מודאליים --- */
+.google-tasks-wrapper.is-details-open,
+.google-tasks-wrapper.is-datetime-open {
+  overflow: hidden;
+}
+
+/* ===== Due date subtext (task row) ===== */
+.google-tasks-wrapper .gt-subtext { margin-top: 2px; font-size: 12px; color: #5F6368; line-height: 1.2; }
+/* Header order override: title then icons (RTL visual) */
+.google-tasks-wrapper .gt-list-header { display:flex; align-items:center; gap:8px; }
+.google-tasks-wrapper .gt-list-header .gt-list-title { margin-inline-start: 0; margin-inline-end: auto; }
+
+
+/* שורת משנה — בדיוק כמו בגוגל: כחול */
+/* (Removed blue variant .gt-sub – unified block added later) */
+
+
+/* Category accent bar helpers (RTL: right side) */
+.gt-category-accent-red { position:relative; }
+.gt-category-accent-red::before { content:""; position:absolute; inset-block:8px; right:0; width:4px; border-radius:4px; background:#dc2626; }
+.gt-category-accent-green { position:relative; }
+.gt-category-accent-green::before { content:""; position:absolute; inset-block:8px; right:0; width:4px; border-radius:4px; background:#059669; }
+.gt-category-accent-purple { position:relative; }
+.gt-category-accent-purple::before { content:""; position:absolute; inset-block:8px; right:0; width:4px; border-radius:4px; background:#7e22ce; }
+.gt-category-accent-blue { position:relative; }
+.gt-category-accent-blue::before { content:""; position:absolute; inset-block:8px; right:0; width:4px; border-radius:4px; background:#2563eb; }
+.gt-category-accent-gray { position:relative; }
+.gt-category-accent-gray::before { content:""; position:absolute; inset-block:8px; right:0; width:4px; border-radius:4px; background:#6b7280; }
+.gt-category-accent-yellow { position:relative; }
+.gt-category-accent-yellow::before { content:""; position:absolute; inset-block:8px; right:0; width:4px; border-radius:4px; background:#d97706; }
+
+/* === Added: Banner, subtitle, sort sheet minimal styles (spec step 5) === */
+/* Banner (אדום) */
+.gt-banner { display:flex; align-items:center; gap:8px; padding:12px 14px; border-radius:16px; margin:12px 12px 0; font-size:14px; line-height:20px; }
+.gt-banner-danger { background:#fce8e6; color:#b31412; border:1px solid #fad2cf; }
+.gt-banner-link { margin-inline-start:auto; background:transparent; border:0; color:#1a73e8; font-weight:600; cursor:pointer; }
+
+/* כותרת משנה בשורה */
+/* (Deprecated global .gt-title-wrap – superseded by .gt-text) */
+/* .gt-title-wrap { display:flex; flex-direction:column; gap:2px; flex:1; min-width:0; } */
+/* (Removed legacy small subtitle) */
+/* (Removed accent helper – no HTML inside .gt-sub now) */
+
+/* Sheet מיון (override/additive – base sheet class already exists) */
+.gt-sheet { position:absolute; inset-inline:0; bottom:0; border-radius:24px 24px 0 0; background:#fff; padding:8px; }
+.gt-sort-sheet { box-shadow:0 -10px 24px rgba(0,0,0,.12); }
+.gt-sort-opt { width:100%; text-align:right; padding:14px 12px; background:#fff; border:0; font-size:16px; border-radius:12px; cursor:pointer; }
+.gt-sort-opt.is-selected { background:#eef3fd; }
+.gt-sort-check { margin-inline-start:6px; color:#1a73e8; }
+.gt-sheet-cancel { width:100%; margin-top:6px; border:0; padding:14px; border-radius:14px; background:#f1f3f4; }
+
+/* התאמות Row קיימות (אם לא קיימות כבר) */
+/* (Removed legacy generic gt-title variant) */
+
+/* (Removed earlier appended override block – replaced by single source below) */
+
+/* (Legacy task row styling removed – unified block appended below) */
+/* (Legacy subtitle styles removed – single unified block below retains temporary alias) */
+
+/* Unified text container alignment */
+.google-tasks-wrapper .gt-text, .google-tasks-wrapper .task-text { text-align:right; }
+
+/* Legacy alias (TaskItem) */
+.google-tasks-wrapper .task-title { font-size: var(--font-title-size); line-height: var(--font-title-line); font-weight: var(--font-title-weight); color: var(--color-text-primary,#202124); overflow:hidden; text-overflow:ellipsis; display:-webkit-box; -webkit-line-clamp:2; line-clamp:2; -webkit-box-orient:vertical; white-space:normal; }
+.google-tasks-wrapper .task-subtitle { font-size: var(--font-subtitle-size); line-height: var(--font-subtitle-line); font-weight: var(--font-subtitle-weight); color: var(--color-text-secondary,#5f6368); margin-top:6px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+/* === SUBTITLE – טיפוגרפיה אחידה ומרוסנת === */
+/* (Removed earlier subtitle block – replaced by unified Vertical Rhythm block at file end) */
+
+@layer gt-components {
+  /* === Tooltip (pure visual, no extra ARIA) === */
+  .google-tasks-wrapper .has-gt-tooltip { position: relative; }
+  .google-tasks-wrapper .has-gt-tooltip[data-tip]:hover::after,
+  .google-tasks-wrapper .has-gt-tooltip[data-tip]:focus-visible::after {
+    content: attr(data-tip);
+    position: absolute;
+    inset-inline-end: 50%;
+    transform: translateX(50%) translateY(calc(-100% - var(--tooltip-gap,8px)));
+    background: var(--tooltip-bg);
+    color: var(--tooltip-fg);
+    padding: var(--tooltip-pad);
+    border-radius: var(--tooltip-radius);
+    white-space: nowrap;
+    pointer-events: none;
+    z-index: 50;
+    font-size: var(--tooltip-fs);
+    line-height: 1.2;
+    box-shadow: 0 4px 12px rgba(0,0,0,.28);
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .google-tasks-wrapper .has-gt-tooltip[data-tip]:hover::after,
+    .google-tasks-wrapper .has-gt-tooltip[data-tip]:focus-visible::after { transition:none; }
+  }
+/* ===== TASK ROW – BASE (Unified Single Source) ===== */
+/* Typography + rhythm tokens */
+/* Local aliases → global design tokens (no raw px) */
+:root {
+  /* Typography */
+  --gt-title-fs: var(--font-size-title, 16px);
+  --gt-title-lh: var(--line-height-title, 22px);
+  --gt-sub-fs:   var(--font-size-sub, 14px);
+  --gt-sub-lh:   var(--line-height-sub, 20px);
+  /* Vertical rhythm */
+  --gt-gap-v:    var(--title-sub-gap, var(--space-1));
+  --gt-pad-b:    var(--row-pad-block, var(--space-2));
+  /* Primary vs Secondary action tokens */
+  --gt-primary-size:   var(--icon-size, 40px); /* density aware */
+  --gt-secondary-size: var(--icon-size-secondary, 32px); /* fallback star size */
+  --gt-primary-color:  var(--color-primary,#1A73E8);
+  --gt-primary-bg:     var(--check-on-bg,#E8F0FE);
+  --gt-star-on:        var(--color-accent-star,#F4B400);
+  --gt-icon-idle:      var(--color-text-muted,#5f6368);
+  --gt-icon-hover:     var(--color-text,#202124);
+  --gt-scale-primary:  1.06;
+  --gt-scale-secondary:1.03;
+  /* Radii */
+  --gt-radius-row: var(--radius-row, 12px);
+  --gt-radius-ctrl: var(--ctrl-radius, 10px);
+  /* Row min height */
+  --gt-row-min-h: var(--row-min-h, 56px);
+  /* Gap inline */
+  --gt-row-gap: var(--row-gap-inline, var(--row-gap, var(--space-3)));
+  /* Inline padding */
+  --gt-row-pad-inline: var(--row-pad-inline, var(--space-3));
+}
+
+  .google-tasks-wrapper .gt-row {
+  /* === GRID LAYOUT (Rail | Body | Trailing) === */
+  display: grid;
+  grid-template-columns: var(--rail-col, 40px) 1fr var(--trail-col, 40px);
+  align-items: stretch; /* rail spans full vertical for alignment */
+  gap: var(--row-grid-gap, var(--gt-row-gap));
+  padding-inline: var(--gt-row-pad-inline);
+  padding-block: 0; /* internal children own vertical padding */
+  border-radius: var(--gt-radius-row);
+  background: var(--row-bg-default);
+  box-shadow: inset 0 0 0 1px var(--row-outline);
+  transition: background-color var(--dur-bg) var(--ease), box-shadow var(--dur-shadow) var(--ease);
+
+  /* default lines (no-sub) => up to 2 title lines */
+  --title-lines: 2;
+  --sub-lines: 0;
+  --_calc-min-h: calc( (var(--gt-pad-b) * 2) + (var(--title-lines) * var(--gt-title-lh)) + (var(--sub-lines) * var(--gt-sub-lh)) + (max(var(--sub-lines),0) * var(--gt-gap-v)) );
+  min-height: max(var(--gt-row-min-h), var(--_calc-min-h));
+  position: relative;
+  }
+  .google-tasks-wrapper .gt-row.has-sub { --title-lines: 1; --sub-lines: 1; }
+  .google-tasks-wrapper .gt-row.no-sub { --title-lines: 2; --sub-lines: 0; }
+
+/* Title (clamped by --title-lines) */
+  .google-tasks-wrapper .gt-title {
+  font-weight: 600;
+  font-size: var(--gt-title-fs);
+  line-height: var(--gt-title-lh);
+  color: var(--color-text, #202124);
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  line-clamp: var(--title-lines);
+  -webkit-line-clamp: var(--title-lines);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: normal;
+  margin: 0;
+}
+/* ===== Title Modifiers (BEM-Lite) ===== */
+  .google-tasks-wrapper .gt-title--primary { color: var(--title-primary-color); font-weight: var(--title-primary-weight); }
+  .google-tasks-wrapper .gt-title--secondary { color: var(--title-secondary-color); font-weight: var(--title-secondary-weight); }
+  .google-tasks-wrapper .gt-title--muted { color: var(--title-muted-color); font-weight: var(--title-muted-weight); }
+  .google-tasks-wrapper .gt-title--danger { color: var(--title-danger-color); font-weight: var(--title-danger-weight); }
+  .google-tasks-wrapper .gt-title--link { color: var(--title-link-color); font-weight: var(--title-link-weight); text-decoration: var(--title-link-underline); }
+  /* State precedence: completed state overrides modifiers */
+  .google-tasks-wrapper .gt-row.is-completed .gt-title { color: var(--completed-text); text-decoration: line-through; }
+/* PRIMARY vs SECONDARY actions (Check vs Star) */
+  .google-tasks-wrapper .gt-row .gt-check,
+  .google-tasks-wrapper .gt-row .gt-star {
+  appearance:none;
+  border:0;
+  background:transparent;
+  cursor:pointer;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  line-height:1;
+  border-radius: var(--gt-radius-ctrl);
+  color:var(--gt-icon-idle);
+  transition: transform .08s ease, background-color .12s ease, color .12s ease;
+}
+  .google-tasks-wrapper .gt-row .gt-check { width:var(--gt-primary-size); height:var(--gt-primary-size); }
+  .google-tasks-wrapper .gt-row .gt-star  { width:var(--gt-secondary-size); height:var(--gt-secondary-size); }
+.google-tasks-wrapper .gt-row .gt-check:hover { transform:scale(var(--gt-scale-primary)); background:var(--control-hover-bg); color:var(--gt-primary-color); }
+.google-tasks-wrapper .gt-row .gt-star:hover  { transform:scale(var(--gt-scale-secondary)); background:var(--control-hover-bg); color:var(--icon-hover-color, var(--color-text)); }
+.google-tasks-wrapper .gt-row .gt-check.is-on { color:var(--gt-primary-color); background:var(--gt-primary-bg); box-shadow:none; }
+.google-tasks-wrapper .gt-row .gt-star.is-on  { color:var(--gt-star-on); background:transparent; box-shadow:none; }
+.google-tasks-wrapper .gt-row .gt-check:active { transform:scale(.97); }
+.google-tasks-wrapper .gt-row .gt-star:active  { transform:scale(.985); }
+
+/* ===== COMPLETED STATE ===== */
+  .google-tasks-wrapper .gt-row.is-completed { background: var(--row-bg-completed); }
+  /* Completed demotion: subtle opacity, no hover amplification */
+  /* Removed global opacity dimming for completed rows (accessibility & clarity) */
+  .google-tasks-wrapper .gt-row.is-completed:hover { box-shadow: inset 0 0 0 1px var(--row-outline); transform:none; cursor: default; }
+  .google-tasks-wrapper .gt-row.is-completed:focus-visible { outline:none; box-shadow: inset 0 0 0 1px var(--row-outline-hover), 0 0 0 2px var(--completed-focus-ring); }
+  .google-tasks-wrapper .gt-row.is-completed .gt-check,
+  .google-tasks-wrapper .gt-row.is-completed .gt-star { cursor:pointer; }
+  .google-tasks-wrapper .gt-row.is-completed .gt-check:hover,
+  .google-tasks-wrapper .gt-row.is-completed .gt-check:focus-visible,
+  .google-tasks-wrapper .gt-row.is-completed .gt-star:hover,
+  .google-tasks-wrapper .gt-row.is-completed .gt-star:focus-visible { background: var(--control-hover-bg); }
+  .google-tasks-wrapper .gt-row.is-completed .gt-title {
+  color: var(--completed-text);
+  text-decoration: line-through;
+  text-decoration-thickness: 1.2px;
+  text-underline-offset: 2px;
+}
+/* completed sub color already set above via .gt-sub rule override */
+
+/* Star in completed row – subdued */
+/* Completed star slightly softened */
+  .google-tasks-wrapper .gt-row.is-completed .gt-star.is-on { filter:saturate(.85); }
+
+/* Check in completed row – ring style */
+  .google-tasks-wrapper .gt-row.is-completed .gt-check.is-on { background: var(--gt-primary-bg); color: var(--check-on-color, #1A73E8); box-shadow:none; border-color:transparent; }
+
+/* Focus-visible accessibility */
+/* Focus-visible accessibility */
+/* ========= Focus Tokens ========= */
+:root {
+  --focus-halo:          rgba(26,115,232,.20); /* row halo */
+  --focus-ring-primary:  #1A73E8;              /* check / text */
+  --focus-ring-secondary:#5F6368;              /* star subtle */
+  --focus-bg-primary:    rgba(26,115,232,.08); /* bg tint on focus */
+  --focus-offset:        2px;
+  --focus-w-primary:     3px;
+  --focus-w-text:        2px;
+  --focus-w-secondary:   1.5px;
+}
+
+/* ========= Row-level Halo ========= */
+  .google-tasks-wrapper .gt-row { position: relative; }
+  .google-tasks-wrapper .gt-row:focus-within { box-shadow: inset 0 0 0 1px var(--row-outline-hover), 0 0 0 3px var(--focus-halo); background: color-mix(in srgb, var(--row-bg-default) 94%, var(--focus-bg-primary)); }
+
+/* ========= Neutralize generic outlines inside row ========= */
+  .google-tasks-wrapper .gt-row *:focus { outline: none; }
+
+/* ========= Primary: CHECK ========= */
+  .google-tasks-wrapper .gt-row .gt-check:focus-visible { box-shadow: 0 0 0 var(--focus-w-primary) var(--focus-ring-primary); background: var(--control-hover-bg); }
+
+/* ========= Primary: TEXT BUTTON ========= */
+  .google-tasks-wrapper .gt-row .gt-textButton.gt-text:focus-visible { box-shadow: 0 0 0 var(--focus-w-text) var(--focus-ring-primary) inset; border-radius: var(--gt-radius-ctrl); background: color-mix(in srgb, var(--row-bg-default) 96%, var(--focus-bg-primary)); }
+
+/* ========= Secondary: STAR ========= */
+  .google-tasks-wrapper .gt-row .gt-star:focus-visible { box-shadow: 0 0 0 var(--focus-w-secondary) var(--focus-ring-secondary); border-radius: var(--gt-radius-ctrl); background: var(--control-hover-bg); }
+  /* Row hover ring & keep controls transparent unless directly hovered */
+  .google-tasks-wrapper .gt-row:hover { box-shadow: inset 0 0 0 1px var(--row-outline-hover), 0 0 0 3px var(--row-hover-ring); }
+  .google-tasks-wrapper .gt-row:hover .gt-check:not(:hover):not(:focus-visible),
+  .google-tasks-wrapper .gt-row:hover .gt-star:not(:hover):not(:focus-visible) { background: transparent; }
+
+/* ========= Reduce jitter (keyboard vs mouse) ========= */
+@media (hover:hover) {
+  .google-tasks-wrapper .gt-row .gt-check:focus-visible { transform: scale(1.03); }
+  .google-tasks-wrapper .gt-row .gt-star:focus-visible  { transform: scale(1.01); }
+}
+
+/* ========= Respect reduced motion ========= */
+@media (prefers-reduced-motion: reduce) {
+  .google-tasks-wrapper .gt-row .gt-check:focus-visible,
+  .google-tasks-wrapper .gt-row .gt-star:focus-visible { transform: none; }
+}
+
+/* Screen-reader only utility */
+.sr-only { position:absolute !important; width:1px !important; height:1px !important; padding:0 !important; margin:-1px !important; overflow:hidden !important; clip:rect(0 0 0 0) !important; white-space:nowrap !important; border:0 !important; }
+
+@media (prefers-reduced-motion: reduce) {
+  .google-tasks-wrapper .gt-row,
+  .google-tasks-wrapper .gt-row .gt-check,
+  .google-tasks-wrapper .gt-row .gt-star { transition: none !important; }
+}
+
+/* === Subtitle Clamp & Reset (sanitized HTML) === */
+.google-tasks-wrapper .gt-subtitle {
+  font-size: var(--font-size-sub);
+  line-height: var(--line-height-sub);
+  font-weight: var(--weight-sub, 400);
+  color: var(--color-text-muted, #5f6368);
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  white-space: normal;
+  text-overflow: ellipsis;
+  word-break: break-word;
+  overflow-wrap: anywhere;
+  direction: inherit;
+  unicode-bidi: plaintext;
+  max-block-size: calc(var(--line-height-sub) * 2);
+  margin: 0;
+  padding: 0;
+}
+.google-tasks-wrapper .gt-subtitle * {
+  font: inherit !important;
+  color: inherit !important;
+  line-height: inherit !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  border: 0 !important;
+  background: none !important;
+  display: inline !important;
+  vertical-align: baseline !important;
+  max-width: 100%;
+}
+.google-tasks-wrapper .gt-subtitle img,
+.google-tasks-wrapper .gt-subtitle picture,
+.google-tasks-wrapper .gt-subtitle svg,
+.google-tasks-wrapper .gt-subtitle video,
+.google-tasks-wrapper .gt-subtitle audio,
+.google-tasks-wrapper .gt-subtitle iframe,
+.google-tasks-wrapper .gt-subtitle object,
+.google-tasks-wrapper .gt-subtitle embed,
+.google-tasks-wrapper .gt-subtitle canvas { display: none !important; }
+@supports not (-webkit-line-clamp: 2) {
+  .google-tasks-wrapper .gt-subtitle { display: block; }
+}
+
+/* ===== Canonical text container ===== */
+  .google-tasks-wrapper .gt-text { display:flex; flex-direction:column; flex:1 1 auto; min-width:0; }
+
+/* TEMP ALIASES — להסרה בעוד חודש */
+  .google-tasks-wrapper .gt-title-wrap,
+  .google-tasks-wrapper .gt-lines,
+  .google-tasks-wrapper .task-text-container { display: block; min-width: 0; }
+/* Legacy alias containers inherit .gt-title / .gt-subtitle styles automatically */
+
+/* Subtitle unified (1 line if has-sub, hidden when no-sub sets sub-lines=0) */
+  .google-tasks-wrapper .gt-subtitle, .google-tasks-wrapper .gt-sub {
+  font-size: var(--gt-sub-fs);
+  line-height: var(--gt-sub-lh);
+  color: var(--text-secondary, #5f6368);
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  line-clamp: var(--sub-lines);
+  -webkit-line-clamp: var(--sub-lines);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: normal;
+  margin: 0;
+}
+  .google-tasks-wrapper .gt-row.has-sub .gt-title { margin-bottom: var(--gt-gap-v); }
+  .google-tasks-wrapper .gt-row.no-sub .gt-subtitle, .google-tasks-wrapper .gt-row.no-sub .gt-sub { display:none; }
+  .google-tasks-wrapper .gt-row.is-completed .gt-subtitle, .google-tasks-wrapper .gt-row.is-completed .gt-sub { color: var(--completed-subtext, #9aa0a6); }
+  .google-tasks-wrapper .gt-subtitle :is(strong,b,em,i,u,span), .google-tasks-wrapper .gt-sub :is(strong,b,em,i,u,span) { all: unset; display:inline; }
+
+/* (Removed legacy Interactive Balance block – replaced by primary/secondary above) */
+
+/* === Text Hit-Area Button (predictable clickable area) === */
+  .google-tasks-wrapper .gt-textButton {
+  all: unset;
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
+  min-width: 0;
+  cursor: pointer;
+  padding-block: var(--gt-pad-b); /* vertical rhythm token */
+  padding-inline: var(--space-1, 4px);
+  border-radius: var(--gt-radius-ctrl);
+  position: relative;
+}
+  .google-tasks-wrapper .gt-textButton:hover { background: rgba(60,64,67,0.04); }
+  .google-tasks-wrapper .gt-textButton:active { background: rgba(60,64,67,0.08); }
+  .google-tasks-wrapper .gt-textButton:focus-visible { /* replaced by new focus hierarchy above */ box-shadow: none; }
+
+/* Prevent accidental text selection flicker on rapid taps */
+  .google-tasks-wrapper .gt-textButton:active .gt-title { user-select: none; }
+
+  /* === NEW STRUCTURAL WRAPPERS === */
+  .google-tasks-wrapper .gt-rail { display:flex; flex-direction:column; align-items:center; justify-content:flex-start; padding-block: var(--gt-pad-b); gap: var(--rail-gap,6px); }
+  .google-tasks-wrapper .gt-body { display:flex; flex-direction:column; min-width:0; }
+  .google-tasks-wrapper .gt-trailing { display:flex; flex-direction:column; align-items:center; justify-content:flex-start; padding-block: var(--gt-pad-b); gap: var(--rail-gap,6px); }
+  /* Allow legacy direct-child until JSX refactor completes */
+  .google-tasks-wrapper .gt-row > .gt-check:not(.gt-rail *),
+  .google-tasks-wrapper .gt-row > .gt-star:not(.gt-trailing *),
+  .google-tasks-wrapper .gt-row > .gt-textButton:not(.gt-body *),
+  .google-tasks-wrapper .gt-row > .gt-text:not(.gt-body *) { align-self:center; }
+
+
+  /* Provide min rail width so internal items center properly */
+  .google-tasks-wrapper .gt-rail { width: var(--rail-col,40px); }
+  .google-tasks-wrapper .gt-trailing { width: var(--trail-col,40px); }
+  @media (max-width:380px){ .google-tasks-wrapper .gt-row { grid-template-columns: var(--rail-col,36px) 1fr var(--trail-col,36px); } }
+}
+
+/* Structured Meta (replaces raw HTML subtitle) */
+.google-tasks-wrapper .gt-meta {
+  font-size: var(--font-size-sub);
+  line-height: var(--line-height-sub);
+  color: var(--color-text-muted, #5f6368);
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: normal;
+  gap: 4px;
+}
+.google-tasks-wrapper .gt-metaClamp {
+  position: relative;
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: var(--meta-lines-collapsed);
+  line-clamp: var(--meta-lines-collapsed);
+  max-height: calc(var(--line-height-sub) * var(--meta-lines-collapsed));
+  transition: max-height var(--meta-anim-dur) var(--meta-anim-ease);
+}
+.google-tasks-wrapper .gt-metaClamp.is-expanded {
+  -webkit-line-clamp: var(--meta-lines-expanded);
+  line-clamp: var(--meta-lines-expanded);
+  max-height: calc(var(--line-height-sub) * var(--meta-lines-expanded));
+}
+.google-tasks-wrapper .gt-expander {
+  position: absolute;
+  inset-inline-end: 0;
+  inset-block-end: 0;
+  width: var(--expander-size);
+  height: var(--expander-size);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--expander-radius);
+  background: transparent;
+  border: 0;
+  cursor: pointer;
+  transition: background-color var(--dur-bg) var(--ease), transform var(--dur-bg) var(--ease);
+}
+.google-tasks-wrapper .gt-expander:hover,
+.google-tasks-wrapper .gt-expander:focus-visible {
+  background: var(--expander-hover-bg);
+}
+.google-tasks-wrapper .gt-expander .gt-expander__chev { display:inline-block; transform: rotate(0deg); transition: transform var(--dur-bg) var(--ease); }
+.google-tasks-wrapper .gt-expander.is-expanded .gt-expander__chev { transform: rotate(180deg); }
+@media (prefers-reduced-motion: reduce) { .google-tasks-wrapper .gt-metaClamp { transition: none; } }
+@media (max-width:360px) { .google-tasks-wrapper .gt-expander { inset-inline-end:4px; inset-block-end:2px; } }
+.google-tasks-wrapper .gt-meta > * { display:inline; margin:0; padding:0; }
+.google-tasks-wrapper .gt-badge { display:inline-flex; align-items:center; gap: var(--badge-gap); padding: var(--badge-pad-block) var(--badge-pad-inline); border-radius: var(--badge-radius); font-weight:600; font-size: 0.86em; }
+.google-tasks-wrapper .gt-badge__icon { width: var(--badge-icon-size); height: var(--badge-icon-size); transform: translateY(var(--badge-icon-shift)); flex:0 0 auto; }
+.google-tasks-wrapper .gt-badge__text { display:inline-block; }
+.google-tasks-wrapper .gt-badge--reminder { color: var(--badge-reminder-fg); background: var(--badge-reminder-bg); }
+.google-tasks-wrapper .gt-badge--completed { color: var(--badge-completed-fg); background: var(--badge-completed-bg); }
+.google-tasks-wrapper .gt-badge--description { color: var(--badge-description-fg); background: var(--badge-description-bg); }
+.google-tasks-wrapper .gt-time { color: var(--color-text-muted, #5f6368); }
+.google-tasks-wrapper .gt-time-date { font-weight:600; }
+.google-tasks-wrapper .gt-time-clock { font-weight:500; }
+.google-tasks-wrapper .gt-time-rel { opacity:.85; }
+.google-tasks-wrapper .gt-note { color: var(--color-text-muted, #5f6368); }
+
+/* === Priority & Overdue Badges === */
+.google-tasks-wrapper .gt-badge--priority { font-weight:700; letter-spacing:.25px; }
+.google-tasks-wrapper .gt-badge--priority.is-variant--danger  { color: var(--pri-p1-fg); background: var(--pri-p1-bg); }
+.google-tasks-wrapper .gt-badge--priority.is-variant--warning { color: var(--pri-p2-fg); background: var(--pri-p2-bg); }
+.google-tasks-wrapper .gt-badge--priority.is-variant--neutral { color: var(--pri-p3-fg); background: var(--pri-p3-bg); }
+.google-tasks-wrapper .gt-badge--overdue.is-variant--danger { color: var(--v-danger-fg); background: var(--v-danger-bg); }
+.google-tasks-wrapper .gt-row.is-completed .gt-badge--priority,
+.google-tasks-wrapper .gt-row.is-completed .gt-badge--overdue { opacity:.55; }
+
+/* Time clusters and chips */
+.google-tasks-wrapper .gt-timeCluster { display:inline; gap: var(--meta-gap); }
+.google-tasks-wrapper .gt-chip { display:inline-flex; align-items:center; gap: var(--meta-gap); padding-inline: var(--chip-pad-inline); padding-block: var(--chip-pad-block); border-radius: var(--chip-radius); }
+.google-tasks-wrapper .gt-chip + .gt-chip, .google-tasks-wrapper .gt-badge + .gt-chip, .google-tasks-wrapper .gt-chip + .gt-badge { margin-inline-start: var(--meta-chip-gap); }
+.google-tasks-wrapper .gt-chip--datetime { color: var(--chip-datetime-fg); background: var(--chip-datetime-bg); }
+.google-tasks-wrapper .gt-chip--relative { color: var(--chip-relative-fg); background: var(--chip-relative-bg); font-weight:600; }
+.google-tasks-wrapper .gt-datePart { font-weight:600; }
+.google-tasks-wrapper .gt-timePart { font-weight:500; }
+.google-tasks-wrapper .gt-noteChip { display:inline; margin-inline-start: var(--meta-chip-gap); color: var(--color-text-muted, #5f6368); }
+@media (max-width:360px){ .google-tasks-wrapper .gt-noteChip { display:inline-block; margin-inline-start:0; } }
+
+/* === Variant Classes (shared by badges & chips) === */
+.google-tasks-wrapper .is-variant--success { color: var(--v-success-fg); background: var(--v-success-bg); }
+.google-tasks-wrapper .is-variant--warning { color: var(--v-warning-fg); background: var(--v-warning-bg); }
+.google-tasks-wrapper .is-variant--danger  { color: var(--v-danger-fg);  background: var(--v-danger-bg); }
+.google-tasks-wrapper .is-variant--info    { color: var(--v-info-fg);    background: var(--v-info-bg); }
+.google-tasks-wrapper .is-variant--muted   { color: var(--v-muted-fg);   background: var(--v-muted-bg); }
+.google-tasks-wrapper .is-variant--neutral { color: var(--v-neutral-fg); background: var(--v-neutral-bg); }
+
+/* === Smart Completed State (no global opacity) === */
+.google-tasks-wrapper .gt-row.is-completed { background: var(--row-bg-completed, rgba(153,160,166,0.10)); }
+.google-tasks-wrapper .gt-row.is-completed:hover { box-shadow: inset 0 0 0 1px var(--row-outline); cursor: default; transform:none; }
+.google-tasks-wrapper .gt-row.is-completed .gt-title { color: var(--completed-title-color); text-decoration: var(--completed-decoration); font-weight: var(--completed-title-weight); }
+.google-tasks-wrapper .gt-row.is-completed .gt-meta,
+.google-tasks-wrapper .gt-row.is-completed .gt-note,
+.google-tasks-wrapper .gt-row.is-completed .gt-noteChip { color: var(--completed-meta-color); }
+.google-tasks-wrapper .gt-row.is-completed .gt-check { color: var(--completed-check-fg); background: var(--completed-check-bg); box-shadow: 0 0 0 2px var(--completed-check-ring) inset; }
+.google-tasks-wrapper .gt-row.is-completed .gt-check.is-on { color: var(--completed-check-fg); }
+.google-tasks-wrapper .gt-row.is-completed .gt-star.is-on { color: var(--color-accent-star, #F4B400); filter:none; }
+.google-tasks-wrapper .gt-row.is-completed .gt-star:not(.is-on) { color: var(--completed-star-muted); }
+/* Suppress textArea highlight for completed rows */
+.google-tasks-wrapper .gt-row.is-completed .gt-body:hover .gt-textArea,
+.google-tasks-wrapper .gt-row.is-completed .gt-body:focus-within .gt-textArea { background: transparent; }
+
+/* === Text Area Hover/Focus Zoning (main content only) === */
+.google-tasks-wrapper .gt-textArea {
+  padding-inline: var(--textArea-pad-inline, 6px);
+  padding-block: var(--textArea-pad-block, 2px);
+  border-radius: var(--textArea-radius, 10px);
+  background: transparent;
+  transition: background-color var(--textArea-transition, .12s ease);
+  outline: none;
+}
+.google-tasks-wrapper .gt-body:hover .gt-textArea { background: var(--textArea-hover-bg, rgba(32,33,36,.04)); }
+.google-tasks-wrapper .gt-body:focus-within .gt-textArea { background: var(--textArea-focus-bg, rgba(26,115,232,.08)); }
+/* Keep action buttons transparent unless directly hovered */
+.google-tasks-wrapper .gt-row:hover .gt-check,
+.google-tasks-wrapper .gt-row:hover .gt-star { background: transparent; }
+.google-tasks-wrapper .gt-rail .gt-check:hover,
+.google-tasks-wrapper .gt-rail .gt-check:focus-visible,
+.google-tasks-wrapper .gt-trailing .gt-star:hover,
+.google-tasks-wrapper .gt-trailing .gt-star:focus-visible { background: var(--control-hover-bg); }
+/* Completed rows: suppress textArea highlight */
+.google-tasks-wrapper .gt-row.is-completed .gt-body:hover .gt-textArea,
+.google-tasks-wrapper .gt-row.is-completed .gt-body:focus-within .gt-textArea { background: transparent; }
+@media (prefers-reduced-motion: reduce) { .google-tasks-wrapper .gt-textArea { transition: none; } }
+
+/* === Micro Interaction Animations: Check & Star === */
+@layer gt-components {
+  /* Prepare stroke path for draw */
+  .google-tasks-wrapper .gt-check .gt-checkmark { stroke-dasharray: var(--check-len); stroke-dashoffset: var(--check-len); }
+  /* Draw when animating or when turned on (for first time) */
+  .google-tasks-wrapper .gt-check.is-animating .gt-checkmark,
+  .google-tasks-wrapper .gt-check.is-on .gt-checkmark { animation: gt-check-draw var(--anim-check-dur) var(--ease-out-snap) forwards; }
+  .google-tasks-wrapper .gt-check { position:relative; overflow:visible; }
+  .google-tasks-wrapper .gt-check.is-animating::after { content:""; position:absolute; inset:0; border-radius:inherit; box-shadow:0 0 0 8px var(--pulse-color); transform:scale(.6); opacity:.35; pointer-events:none; animation: gt-pulse-ring var(--anim-pulse-dur) var(--ease-out-snap) forwards; }
+  @keyframes gt-check-draw { from { stroke-dashoffset: var(--check-len);} to { stroke-dashoffset:0;} }
+  @keyframes gt-pulse-ring { from { transform:scale(.6); opacity:.35;} to { transform:scale(1.6); opacity:0;} }
+  /* Star pop + spark */
+  .google-tasks-wrapper .gt-star { position:relative; }
+  .google-tasks-wrapper .gt-star.is-animating { animation: gt-star-pop var(--anim-star-dur) var(--ease-out-snap); }
+  @keyframes gt-star-pop { 0% { transform:scale(.86);} 60% { transform:scale(1.12);} 100% { transform:scale(1);} }
+  .google-tasks-wrapper .gt-star.is-animating::after { content:""; position:absolute; inset:-4px; border-radius:999px; background: conic-gradient(from 0deg, var(--spark-color) 0turn, transparent calc(1turn / var(--spark-rays))); -webkit-mask: radial-gradient(circle at center, rgba(0,0,0,.9) 40%, transparent 64%); mask: radial-gradient(circle at center, rgba(0,0,0,.9) 40%, transparent 64%); transform:scale(.8) rotate(0deg); opacity:.9; pointer-events:none; animation: gt-star-spark var(--anim-spark-dur) var(--ease-out-snap) forwards; }
+  .google-tasks-wrapper .gt-row.is-completed .gt-star.is-animating::after { opacity:.6; }
+  @keyframes gt-star-spark { to { transform:scale(1.25) rotate(25deg); opacity:0; } }
+  /* Reduced motion: neutralize complex animations */
+  @media (prefers-reduced-motion: reduce) {
+    .google-tasks-wrapper .gt-check.is-animating .gt-checkmark,
+    .google-tasks-wrapper .gt-check.is-on .gt-checkmark { animation:none; stroke-dashoffset:0; }
+    .google-tasks-wrapper .gt-check.is-animating::after,
+    .google-tasks-wrapper .gt-star.is-animating::after { animation:none; display:none; }
+    .google-tasks-wrapper .gt-star.is-animating { animation:none; }
+  }
+}
+
+/* === Unified Focus Halo & Sub-Outlines (New System) === */
+.google-tasks-wrapper .gt-row:focus-within::after {
+  content:""; position:absolute; inset:-2px; border-radius: var(--gt-radius-row);
+  pointer-events:none; box-shadow:0 0 0 var(--focus-row-ring-width) var(--focus-row-ring-color);
+  transition: box-shadow var(--focus-dur) var(--focus-ease);
+}
+.google-tasks-wrapper .gt-row[data-completed="true"]:focus-within::after {
+  box-shadow:0 0 0 var(--focus-row-ring-width) var(--focus-row-ring-color-completed);
+}
+.google-tasks-wrapper .gt-row :is(button,[role="button"],[tabindex]:not([tabindex="-1"])):focus-visible {
+  outline: var(--focus-sub-outline-width) solid var(--focus-sub-outline-color);
+  outline-offset: var(--focus-sub-outline-offset);
+}
+/* Neutralize old focus ring artifacts */
+.google-tasks-wrapper .gt-row:focus-within { box-shadow: inset 0 0 0 1px var(--row-outline); background: var(--row-bg-default); }
+.google-tasks-wrapper .gt-row .gt-check:focus-visible,
+.google-tasks-wrapper .gt-row .gt-star:focus-visible,
+.google-tasks-wrapper .gt-row .gt-textButton:focus-visible { box-shadow:none; }
+
+
+
+
+.google-tasks-wrapper .gt-row .gt-textButton:focus-visible { box-shadow:none; }
+
+
+
+

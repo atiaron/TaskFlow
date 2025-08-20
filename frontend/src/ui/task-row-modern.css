@@ -1,0 +1,35 @@
+/* Modern Task Row (2025) */
+.gt-taskRow-wrap { position:relative; touch-action:pan-y; -webkit-user-select:none; user-select:none; }
+.gt-taskRow-swipeBg { position:absolute; inset:0; display:flex; align-items:center; justify-content:space-between; padding:0 12px; font-size:18px; pointer-events:none; color:var(--task-row-swipe-fg); font-weight:600; opacity:0; transition:opacity var(--gt-transition-fast) var(--gt-ease-standard); }
+.gt-taskRow-swipeBg[data-show='true'] { opacity:1; }
+.gt-taskRow { position:relative; display:flex; align-items:stretch; min-height:var(--task-row-height); background:var(--task-row-bg); border:var(--task-row-border); border-radius:var(--task-row-radius); box-shadow:var(--task-row-elevation); padding:var(--task-row-pad-block) var(--task-row-pad-inline); gap:var(--task-row-gap); transition:background var(--task-row-transition), box-shadow var(--task-row-transition), border-color var(--task-row-transition), transform var(--task-row-transition); overflow:hidden; }
+.gt-taskRow:hover { background:var(--task-row-bg-hover); box-shadow:var(--task-row-elevation-hover); }
+.gt-taskRow[data-active='true'] { box-shadow:var(--task-row-elevation-active); background:var(--task-row-bg-active); border:var(--task-row-border-active); }
+.gt-taskRow:focus-visible { outline:0; box-shadow:var(--task-row-focus-ring); }
+.gt-taskRow[data-completed='true'] { opacity:var(--task-row-completed-opacity); }
+.gt-taskRow-leading { width:var(--task-row-handle-width); display:flex; align-items:center; justify-content:center; }
+.gt-taskRow-trailing { width:var(--task-row-trailing-width); display:flex; align-items:center; justify-content:flex-end; gap:4px; }
+.gt-taskRow-body { flex:1 1 auto; display:flex; flex-direction:column; min-width:0; }
+.gt-taskRow-title { font-size:15px; font-weight:600; line-height:1.4; margin:2px 0 0; display:inline-flex; align-items:center; gap:6px; }
+.gt-taskRow-title[data-priority='p1']::before { content:""; width:8px; height:8px; border-radius:50%; background:var(--task-row-priority-p1); box-shadow:0 0 0 3px color-mix(in oklab, var(--task-row-priority-p1) 40%, transparent); }
+.gt-taskRow-title[data-priority='p2']::before { content:""; width:8px; height:8px; border-radius:50%; background:var(--task-row-priority-p2); box-shadow:0 0 0 3px color-mix(in oklab, var(--task-row-priority-p2) 40%, transparent); }
+.gt-taskRow-title[data-priority='p3']::before { content:""; width:8px; height:8px; border-radius:50%; background:var(--task-row-priority-p3); }
+.gt-taskRow-metaClamp { --_lines: var(--task-meta-line-clamp); display:-webkit-box; -webkit-line-clamp:var(--_lines); line-clamp:var(--_lines); -webkit-box-orient:vertical; overflow:hidden; font-size:13px; line-height:1.35; color:var(--color-text-muted); margin-top:4px; transition:all var(--task-expand-duration) var(--task-expand-ease); position:relative; }
+.gt-taskRow-metaClamp[data-expanded='true'] { --_lines: var(--task-meta-line-clamp-expanded); }
+.gt-taskRow-badges { display:flex; flex-wrap:wrap; gap:var(--task-row-badge-gap); margin-top:4px; }
+.gt-taskRow-badge { background:var(--badge-description-bg); color:var(--badge-description-fg); font-size:var(--task-row-badge-fs); padding:var(--task-row-badge-pad); border-radius:var(--task-row-badge-radius); line-height:1.2; display:inline-flex; align-items:center; gap:4px; transform:translateZ(0); transition:transform var(--gt-transition-fast) var(--gt-ease-standard), background var(--gt-transition-fast) var(--gt-ease-standard); }
+.gt-taskRow-badge:hover { transform:scale(var(--badge-scale-hover)); background:color-mix(in oklab, var(--badge-description-bg) 80%, var(--color-primary)); }
+.gt-taskRow-actions button { background:none; border:0; width:36px; height:36px; border-radius:12px; cursor:pointer; display:grid; place-items:center; font-size:18px; color:var(--color-text-muted); transition:background var(--gt-transition-fast) var(--gt-ease-standard), color var(--gt-transition-fast) var(--gt-ease-standard); }
+.gt-taskRow-actions button:hover { background:var(--control-hover-bg); color:var(--color-text); }
+.gt-taskRow-actions button:focus-visible { outline:0; box-shadow:0 0 0 3px rgba(26,115,232,.45); }
+.gt-taskRow-swipeBg[data-variant='complete'] { background:var(--task-row-swipe-bg-complete); }
+.gt-taskRow-swipeBg[data-variant='star'] { background:var(--task-row-swipe-bg-star); }
+.gt-taskRow-swipeBg[data-variant='delete'] { background:var(--task-row-swipe-bg-delete); }
+/* Expand toggle */
+.gt-taskRow-expandBtn { background:none; border:0; color:var(--color-text-muted); font-size:12px; cursor:pointer; padding:4px 6px; border-radius:8px; margin-top:2px; }
+.gt-taskRow-expandBtn:hover { background:var(--control-hover-bg); color:var(--color-text); }
+.gt-taskRow-expandBtn:focus-visible { outline:0; box-shadow:0 0 0 3px rgba(26,115,232,.35); }
+/* Reduced motion */
+@media (prefers-reduced-motion:reduce){
+  .gt-taskRow, .gt-taskRow-badge { transition:none; }
+}

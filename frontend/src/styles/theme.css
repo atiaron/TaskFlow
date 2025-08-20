@@ -1,0 +1,29 @@
+:root {
+  /* Core Colors */
+  --color-primary: #1A73E8;        /* כחול גוגל – קו תחתון טאב פעיל */
+  --color-text: #202124;           /* טקסט ראשי */
+  --color-muted: #5F6368;          /* טקסט משני */
+  --color-surface: #F8F9FA;        /* רקע הכרטיס */
+  --color-bg: #FFFFFF;             /* רקע כללית */
+  --color-fab: #6E6E73;            /* אפור FAB (Material 3 אפור-חם) */
+  --shadow-elev: 0 6px 18px rgba(0,0,0,.12);
+
+  /* Radius / Shape */
+  --radius-card: 20px;
+  --radius-fab: 16px;              /* ה-FAB בתמונה ריבוע מעוגל, לא עגול מושלם */
+
+  /* Layout Heights */
+  --h-statusbar: 40px;
+  --h-topbar: 56px;
+  --h-tab-indicator: 3px;
+
+  /* Spacing */
+  --space-16: 16px;
+  --space-24: 24px;
+  --space-32: 32px;
+
+  /* Typography */
+  --font-title: 20px/1.3 "Roboto", "Noto Sans Hebrew", system-ui;
+  --font-body: 16px/1.5 "Roboto", "Noto Sans Hebrew", system-ui;
+  --font-caption: 14px/1.45 "Roboto", "Noto Sans Hebrew", system-ui;
+}

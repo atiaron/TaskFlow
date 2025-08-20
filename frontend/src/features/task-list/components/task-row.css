@@ -1,0 +1,342 @@
+/**
+ * TaskRow CSS - Google Tasks Mobile Style
+ * Ultra clean and minimal design with perfect RTL support
+ */
+
+/* לא מסתמכים על direction פנימי; מגיע מה-wrapper העליון */
+.task-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px; /* padding אחיד לפי הדרישות */
+  height: 56px; /* גובה קבוע בדיוק כפי שנדרש */
+  box-sizing: border-box; /* כולל padding בגובה */
+  background: inherit;
+}
+
+/* RTL Order: ☆ star → טקסט → ⭕ checkbox */
+.task-star { 
+  order: 0; 
+}
+.task-text-container { 
+  order: 1; 
+}
+.task-checkbox { 
+  order: 2; 
+}
+
+.task-row + .task-row {
+  margin-top: 0; /* צמודות בלי מרווח */
+}
+
+.task-row:hover {
+  background: var(--google-surface-hover, rgba(95, 99, 104, 0.04));
+}
+
+.task-row:last-child {
+  border-bottom: none;
+}
+
+/* New task appearance animation */
+.task-row.task-new {
+  animation: taskRowAppear 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+@keyframes taskRowAppear {
+  from {
+    opacity: 0;
+    transform: translateY(-10px) scale(0.98);
+    background: rgba(26, 115, 232, 0.1);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+    background: var(--google-surface, #FFFFFF);
+  }
+}
+
+/* Smooth hover animations */
+.task-row:hover .task-star {
+  color: var(--google-blue, #1A73E8);
+  transform: scale(1.05);
+}
+
+.task-row:hover .task-checkbox {
+  border-color: var(--google-blue, #1A73E8);
+  transform: scale(1.05);
+}
+
+.task-row:hover .task-text {
+  background-color: rgba(26, 115, 232, 0.04);
+}
+
+.task-checkbox,
+.task-star {
+  width: 40px;
+  height: 40px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+  flex-shrink: 0; /* מונע כיווץ בפריסות קטנות */
+}
+
+/* Star Button */
+.task-star {
+  border: none;
+  background: transparent;
+  border-radius: 50%;
+  color: var(--google-text-secondary, #5F6368);
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+}
+
+.task-star:hover {
+  background: rgba(95, 99, 104, 0.1);
+  color: var(--google-blue, #1A73E8);
+}
+
+.task-star:active {
+  transform: scale(0.95);
+}
+
+/* Starred state */
+.task-star.task-starred {
+  color: var(--google-yellow, #FBBC04);
+}
+
+.task-star.task-starred:hover {
+  color: var(--google-yellow-dark, #F9AB00);
+}
+
+/* Star bounce animation */
+.task-star-bounce {
+  animation: starBounce 0.3s ease-out;
+}
+
+@keyframes starBounce {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.15); }
+  100% { transform: scale(1); }
+}
+
+/* Task Text Container (Center, flexible) */
+.task-text-container {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  min-width: 0; /* Allow text truncation */
+}
+
+.task-text {
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  text-align: center; /* טקסט ממורכז */
+  padding: 8px 4px;
+  border-radius: 4px;
+  transition: background-color 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  cursor: pointer;
+}
+
+.task-text:hover {
+  background: rgba(26, 115, 232, 0.04);
+}
+
+/* Completed task text */
+.task-text-completed {
+  text-decoration: line-through;
+  color: var(--google-text-tertiary, #80868B);
+}
+
+/* Task Edit Input */
+.task-edit-input {
+  width: 100%;
+  font-size: 16px;
+  font-weight: 400;
+  color: var(--google-text-primary, #202124);
+  font-family: 'Assistant', 'Heebo', 'Roboto', sans-serif;
+  line-height: 1.5;
+  background: transparent;
+  border: none;
+  border-bottom: 2px solid var(--google-blue, #1A73E8);
+  padding: 8px 4px;
+  border-radius: 4px 4px 0 0;
+  outline: none;
+  transition: border-color 0.2s ease;
+}
+
+.task-edit-input:focus {
+  background: rgba(26, 115, 232, 0.04);
+}
+
+/* Checkbox */
+.task-checkbox {
+  width: 24px;
+  height: 24px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid var(--google-text-secondary, #5F6368);
+  border-radius: 50%;
+  background: transparent;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  flex-shrink: 0;
+  position: relative;
+}
+
+.task-checkbox:hover {
+  border-color: var(--google-blue, #1A73E8);
+  background: rgba(26, 115, 232, 0.04);
+}
+
+.task-checkbox:active {
+  transform: scale(0.95);
+}
+
+/* Completed checkbox */
+.task-checkbox-completed {
+  background: var(--google-blue, #1A73E8);
+  border-color: var(--google-blue, #1A73E8);
+}
+
+.task-checkbox-completed:hover {
+  background: var(--google-blue-hover, #1967D2);
+  border-color: var(--google-blue-hover, #1967D2);
+}
+
+/* Completion animation */
+.task-checkbox-complete {
+  animation: checkboxComplete 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+@keyframes checkboxComplete {
+  0% { 
+    transform: scale(1);
+    background: transparent;
+  }
+  50% { 
+    transform: scale(1.1);
+    background: var(--google-blue, #1A73E8);
+  }
+  100% { 
+    transform: scale(1);
+    background: var(--google-blue, #1A73E8);
+  }
+}
+
+/* Completed task row state */
+.task-completed {
+  opacity: 0.7;
+}
+
+/* Dark mode support */
+@media (prefers-color-scheme: dark) {
+  .task-row {
+    --google-surface: #202124;
+    --google-surface-hover: rgba(232, 234, 237, 0.08);
+    --google-border-light: #5F6368;
+    --google-text-primary: #E8EAED;
+    --google-text-secondary: #9AA0A6;
+    --google-text-tertiary: #5F6368;
+    --google-blue: #8AB4F8;
+    --google-blue-hover: #AECBFA;
+    --google-yellow: #FDD663;
+    --google-yellow-dark: #FBBC04;
+  }
+}
+
+/* Mobile responsiveness */
+@media (max-width: 480px) {
+  .task-row {
+    padding: 14px 16px;
+  }
+  
+  .task-star,
+  .task-checkbox {
+    min-width: 44px;
+    min-height: 44px;
+  }
+  
+  .task-text {
+    font-size: 16px;
+  }
+}
+
+/* Enhanced Focus states for accessibility */
+.task-star:focus-visible,
+.task-checkbox:focus-visible {
+  outline: 2px solid var(--google-blue, #1A73E8);
+  outline-offset: 2px;
+  background-color: rgba(26, 115, 232, 0.08);
+}
+
+.task-text:focus-visible {
+  outline: 2px solid var(--google-blue, #1A73E8);
+  outline-offset: 2px;
+  background-color: rgba(26, 115, 232, 0.04);
+  border-radius: 4px;
+}
+
+.task-edit-input:focus {
+  outline: none; /* Custom border handling */
+}
+
+/* High contrast mode */
+@media (prefers-contrast: high) {
+  .task-row {
+    border-bottom-color: #000000;
+  }
+  
+  .task-star,
+  .task-checkbox {
+    border: 1px solid currentColor;
+  }
+  
+  .task-text {
+    color: #000000;
+  }
+  
+  .task-text-completed {
+    color: #666666;
+  }
+}
+
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  .task-row,
+  .task-star,
+  .task-checkbox,
+  .task-text {
+    transition: none;
+  }
+  
+  .task-star-bounce,
+  .task-checkbox-complete,
+  .task-row.task-new {
+    animation: none;
+  }
+}
+
+/* Print styles */
+@media print {
+  .task-row {
+    border-bottom: 1px solid #000000;
+    background: #FFFFFF;
+  }
+  
+  .task-star,
+  .task-checkbox {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+  
+  .task-text-completed {
+    text-decoration: line-through;
+    color: #666666;
+  }
+}

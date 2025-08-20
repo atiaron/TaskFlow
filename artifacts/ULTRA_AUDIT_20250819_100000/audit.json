@@ -1,0 +1,107 @@
+{
+    "summary": {
+        "pass": 15,
+        "fail": 2,
+        "warnings": 1,
+        "parity_score": 85
+    },
+    "p0": [],
+    "p1": [
+        {
+            "title": "פונקציית 'נקה משימות שהושלמו' לא עובדת",
+            "severity": "P1",
+            "steps": "1. פתח תפריט רשימה\n2. לחץ על 'נקה משימות שהושלמו'\n3. המשימות הבוצעות נשארות באקורדיון",
+            "expected": "המשימות הבוצעות אמורות להימחק מהאקורדיון",
+            "actual": "המשימות נשארות באקורדיון",
+            "screenshot": "14_list_menu.png",
+            "console_excerpt": "אין שגיאות קונסול",
+            "ls_dump_snippet": "המשימות עדיין ב-localStorage",
+            "selectors": [
+                ".gt-menu",
+                "button[aria-label='נקה משימות שהושלמו']"
+            ]
+        }
+    ],
+    "p2": [
+        {
+            "title": "אין פונקציונליות פרטי משימה",
+            "severity": "P2",
+            "steps": "1. לחץ על שורת משימה\n2. לא נפתח sheet פרטי משימה",
+            "expected": "נפתח sheet עם פרטי המשימה",
+            "actual": "אין תגובה ללחיצה על שורת משימה",
+            "screenshot": "09_rows_states_after.png",
+            "console_excerpt": "אין שגיאות קונסול",
+            "ls_dump_snippet": "אין שינוי ב-localStorage",
+            "selectors": [
+                "li[role='listitem']"
+            ]
+        }
+    ],
+    "p3": [
+        {
+            "title": "אזהרת meta tag מיושן",
+            "severity": "P3",
+            "steps": "1. טען את הדף\n2. בדוק קונסול",
+            "expected": "אין אזהרות",
+            "actual": "אזהרה על apple-mobile-web-app-capable",
+            "console_excerpt": "apple-mobile-web-app-capable is deprecated",
+            "selectors": [
+                "meta[name='apple-mobile-web-app-capable']"
+            ]
+        }
+    ],
+    "env": {
+        "url": "http://localhost:3000",
+        "viewport": "390x844",
+        "locale": "he-IL",
+        "timezone": "Asia/Jerusalem",
+        "motion": "default",
+        "commitHash": "לא זמין"
+    },
+    "notes": [
+        "הנגישות מצוינת עם ARIA labels ו-roles מלאים",
+        "הביצועים מעולים - פתיחת קומפוזר 0.4ms",
+        "הצבעים נכונים: כוכבים צהובים, סימונים כחולים",
+        "האקורדיון עובד עם התמדה ב-localStorage",
+        "המיון עובד עם שמירה ב-localStorage",
+        "הקומפוזר נסגר אוטומטית אחרי שמירה",
+        "ה-z-index נכון: overlay 40, composer 60",
+        "תמיכה מלאה ב-RTL ועברית",
+        "תמיכה בתווים מיוחדים ואמוג'ים"
+    ],
+    "performance_metrics": {
+        "composer_open_time_ms": 0.4,
+        "target_time_ms": 120,
+        "status": "PASS"
+    },
+    "accessibility_score": {
+        "aria_labels": "PASS",
+        "roles": "PASS",
+        "focus_management": "PASS",
+        "color_contrast": "NOT_TESTED",
+        "keyboard_navigation": "NOT_TESTED",
+        "overall_score": 90
+    },
+    "localStorage_analysis": {
+        "gt_sort_mode": "title",
+        "gt_completed_open": "1",
+        "taskflow_tasks": "4 tasks with correct states",
+        "persistence": "PASS"
+    },
+    "screenshots_taken": [
+        "01_baseline.png",
+        "02_tabs_star.png",
+        "03_tabs_mylist.png",
+        "04_task_created_A.png",
+        "05_task_created_B.png",
+        "06_task_created_C.png",
+        "07_task_created_D.png",
+        "08_rows_states_before.png",
+        "09_rows_states_after.png",
+        "10_completed_open.png",
+        "11_completed_closed.png",
+        "12_sort_sheet.png",
+        "13_sort_effect.png",
+        "14_list_menu.png"
+    ]
+}

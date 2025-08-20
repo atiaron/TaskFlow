@@ -1,0 +1,89 @@
+/**
+ * Google Tasks Floating Action Button (FAB)
+ * Container-Bound, קבוע במיקומו
+ */
+
+/* FAB Container */
+.google-tasks-fab {
+  position: absolute;
+  inset-inline-start: 16px; /* RTL friendly */
+  inset-block-end: 16px; /* Bottom placement */
+  width: 56px;
+  height: 56px;
+  border-radius: 16px;
+  background-color: var(--google-blue, #1A73E8);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(26, 115, 232, 0.4);
+  transition: background-color 0.2s, transform 0.2s, box-shadow 0.2s;
+  z-index: 200; /* elevate above nav (90) & status (100) */
+  pointer-events: auto;
+  touch-action: manipulation; /* mobile tap responsiveness */
+  animation: google-tasks-fab-enter 0.3s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+/* הסתרה כאשר יוצרים או עורכים */
+.google-tasks-fab[hidden] {
+  display: none;
+}
+
+.google-tasks-fab:hover {
+  background-color: var(--google-blue-hover, #1967D2);
+}
+
+.google-tasks-fab:active {
+  transform: scale(0.95);
+  box-shadow: 0 2px 8px rgba(26, 115, 232, 0.4);
+}
+
+/* Neutral variant styles */
+.google-tasks-fab.gt-fab.neutral {
+  background: var(--color-fab);
+  box-shadow: var(--shadow-elev);
+}
+
+.google-tasks-fab.gt-fab.neutral:hover {
+  filter: brightness(1.05);
+}
+
+.google-tasks-fab.gt-fab.neutral:active {
+  transform: scale(0.95);
+}
+
+/* FAB Animation */
+@keyframes google-tasks-fab-enter {
+  from {
+    transform: scale(0.8) translateY(20px);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1) translateY(0);
+    opacity: 1;
+  }
+}
+
+/* Focus states for accessibility */
+.google-tasks-fab:focus-visible {
+  outline: 2px solid white;
+  outline-offset: 2px;
+}
+
+/* Dark mode support */
+@media (prefers-color-scheme: dark) {
+  .google-tasks-fab {
+    --google-blue: #8AB4F8;
+    --google-blue-hover: #AECBFA;
+  }
+}
+
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  .google-tasks-fab {
+    transition: background-color 0.1s;
+    animation: none;
+  }
+}

@@ -1,0 +1,36 @@
+/* DateTimePicker Modern (2025) - relies on tokens defined in theme.css */
+@layer components {
+  .gt-dt-overlay { position:fixed; inset:0; background:var(--dt-backdrop); display:grid; place-items:end center; z-index:60; backdrop-filter:var(--dt-backdrop-filter); }
+  .gt-dt-surface { width:100%; max-width:420px; background:var(--dt-bg); border-radius:28px 28px 0 0; box-shadow:var(--dt-elev); display:flex; flex-direction:column; overflow:hidden; font:var(--dt-wheel-font); }
+  .gt-dt-header { display:flex; align-items:center; justify-content:space-between; padding:var(--dt-header-pad); background:var(--dt-header-bg); font-weight:600; letter-spacing:.3px; }
+  .gt-dt-header h2 { font-size:15px; margin:0; }
+  .gt-dt-body { padding:8px 12px 4px; display:flex; gap:var(--dt-gap); justify-content:center; position:relative; }
+  .gt-dt-columns { display:flex; gap:var(--dt-gap); }
+  .gt-dt-column { position:relative; width:var(--dt-column-width); height:var(--dt-height); overflow-y:auto; overscroll-behavior:contain; scroll-snap-type:y var(--dt-scroll-snap); padding:0 0 16px; mask:var(--dt-wheel-mask); -webkit-mask:var(--dt-wheel-mask); }
+  .gt-dt-column::-webkit-scrollbar{ width:0; height:0; }
+  .gt-dt-slot { height:var(--dt-touch-target); display:flex; align-items:center; justify-content:center; scroll-snap-align:center; color:var(--dt-wheel-muted); font-size:14px; position:relative; transform:scale(var(--dt-slot-scale)); transition:transform var(--dt-wheel-transition), color var(--dt-wheel-transition), font-size var(--dt-wheel-transition), opacity var(--dt-wheel-transition); opacity:var(--dt-slot-opacity); }
+  .gt-dt-slot[data-active="true"] { color:var(--dt-wheel-color); font-size:var(--dt-wheel-active-size); font-weight:500; opacity:1; transform:scale(var(--dt-slot-active-scale)); }
+  .gt-dt-focusbar { position:absolute; top:50%; left:12px; right:12px; height:var(--dt-touch-target); margin-top:calc(var(--dt-touch-target)/-2); border-radius:var(--dt-wheel-radius); background:var(--dt-wheel-selected-bg); box-shadow:0 0 0 1px var(--dt-wheel-selected-ring) inset; pointer-events:none; }
+  .gt-dt-footer { display:flex; gap:12px; justify-content:flex-end; padding:var(--dt-footer-pad); background:var(--dt-footer-bg); }
+  .gt-dt-btn { min-width:64px; height:40px; border-radius:20px; font-size:14px; font-weight:500; border:0; cursor:pointer; padding:0 18px; background:var(--check-on-bg); color:var(--color-text); transition:background var(--gt-transition-fast) var(--gt-ease-standard); }
+  .gt-dt-btn[data-variant="primary"] { background:var(--color-primary); color:var(--primary-foreground,#fff); }
+  .gt-dt-btn:focus-visible { outline:0; box-shadow:var(--dt-focus-ring); }
+  .gt-dt-btn:hover { filter:brightness(1.08); }
+  .gt-dt-btn:active { filter:brightness(.94); }
+  .gt-dt-column:focus-visible { outline:0; }
+  .gt-dt-column[data-keyboard="true"] .gt-dt-slot[data-active="true"] { text-decoration:underline; }
+  /* Slider Variant (horizontal) */
+  .gt-dt--slider .gt-dt-body { flex-direction:column; }
+  .gt-dt--slider .gt-dt-columns { flex-direction:column; width:100%; }
+  .gt-dt--slider .gt-dt-column { width:100%; height:auto; display:flex; overflow-x:auto; overflow-y:hidden; scroll-snap-type:x var(--dt-scroll-snap); padding:4px 0 12px; }
+  .gt-dt--slider .gt-dt-slot { width:72px; flex:0 0 72px; }
+  .gt-dt--slider .gt-dt-focusbar { left:0; right:0; height:var(--dt-touch-target); }
+  /* Reduced motion */
+  @media (prefers-reduced-motion:reduce){
+    .gt-dt-slot { transition:none; }
+  }
+  /* Dark mode example (opt-in class) */
+  .dark .gt-dt-surface { background: #1e1f20; }
+  .dark .gt-dt-header, .dark .gt-dt-footer { background:#232527; }
+  .dark .gt-dt-focusbar { background:rgba(255,255,255,.08); box-shadow:0 0 0 1px rgba(255,255,255,.18) inset; }
+}

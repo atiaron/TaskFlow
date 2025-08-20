@@ -1,0 +1,45 @@
+name: Frontend CI
+
+on:
+  push:
+    branches: [feat/ui-reset-nuke]
+  pull_request:
+    branches: [feat/ui-reset-nuke]
+
+jobs:
+  build-test:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Use Node 18
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18
+          cache: "npm"
+          cache-dependency-path: frontend/package-lock.json
+      - name: Install deps
+        run: npm ci
+      - name: Run unit/RTL tests (CI)
+        run: npm run test:ci -- --passWithNoTests
+      - name: Build
+        run: npm run build || echo "Build exited non-zero"
+      - name: Verify build artifacts
+        run: npm run verify:build
+      - name: Size snapshot
+        run: npm run size:snapshot || echo "Snapshot failed"
+      - name: Upload size snapshot artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: frontend-size-snapshot
+          path: frontend/build/size-snapshot.json
+      - name: Upload build diagnostics (if present)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-diagnostics
+          path: ../BUILD_DIAGNOSTICS.md

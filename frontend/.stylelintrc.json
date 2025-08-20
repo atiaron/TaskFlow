@@ -1,0 +1,22 @@
+{
+  "extends": ["stylelint-config-standard"],
+  "rules": {
+    "no-duplicate-selectors": true,
+    "declaration-block-no-duplicate-properties": [true, { "ignore": ["consecutive-duplicates-with-different-values"] }],
+    "declaration-property-value-disallowed-list": {
+      "display": ["grid"],
+      "flex-direction": ["row-reverse"]
+    },
+    "declaration-property-value-allowed-list": {},
+    "plugin/no-px-outside-tokens": true,
+    "selector-class-pattern": [
+      "^(gt-[a-z0-9-]+(?:__[a-z0-9-]+)?(?:--[a-z0-9-]+)?|is-[a-z0-9-]+)$",
+      { "resolveNestedSelectors": true, "message": "Use gt-* base with optional --modifier or is-* state." }
+    ]
+  },
+  "plugins": [
+  "./stylelint-plugins/no-px-outside-tokens.js",
+  "./stylelint-plugins/no-row-hover-border.js",
+  "./stylelint-plugins/no-completed-hover.js"
+  ]
+}

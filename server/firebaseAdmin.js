@@ -1,9 +1,14 @@
 const admin = require('firebase-admin');
 
 if (!admin.apps.length) {
+  const isDev = process.env.NODE_ENV === 'development';
   const useEmu = !!process.env.FIREBASE_AUTH_EMULATOR_HOST;
   
-  if (useEmu) {
+  if (isDev && !useEmu) {
+    console.log('🔧 Firebase Admin: Skipping initialization in development mode');
+    console.log('💡 Set FIREBASE_AUTH_EMULATOR_HOST to use emulator mode');
+    // Don't initialize Firebase Admin in dev mode without emulator
+  } else if (useEmu) {
     console.log('🔧 Firebase Admin: Using Emulator Mode');
     // Dev: אמולטור – בלי אישורים רגישים
     admin.initializeApp({ 
@@ -31,7 +36,9 @@ if (!admin.apps.length) {
     });
   }
   
-  console.log('✅ Firebase Admin initialized successfully');
+  if (admin.apps.length > 0) {
+    console.log('✅ Firebase Admin initialized successfully');
+  }
 }
 
 module.exports = admin;

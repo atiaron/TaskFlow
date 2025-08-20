@@ -1,0 +1,339 @@
+/**
+ * Task Edit Screen Styles
+ * Pixel-perfect recreation with RTL support and responsive design
+ */
+
+/* ===== CONTAINER EDIT SCREEN ===== */
+
+/* מסך עריכה בגודל המיכל (לא חלון) */
+.task-edit-screen {
+  position: absolute;       /* ← לא fixed */
+  inset: 0;                 /* ממלא 100% מהמיכל */
+  width: 100%;
+  height: 100%;
+  background: #fff;
+  display: flex;
+  flex-direction: column;
+  margin: 0 !important;
+  max-width: none !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+  overflow: hidden;
+  z-index: 100;             /* מספיק מעל התוכן בתוך ה-wrapper */
+  animation: edit-slide-in .24s cubic-bezier(.2,.8,.2,1);
+}
+
+@keyframes edit-slide-in {
+  from { transform: translateY(8%); opacity: .001; }
+  to   { transform: translateY(0);   opacity: 1; }
+}
+
+/* Shared overlay geometry normalization */
+.task-edit-screen, .bottom-sheet, .sheet-overlay {
+  border-radius: 0;
+  box-shadow: none;
+}
+
+/* ===== HEADER ===== */
+
+/* כותרת עליונה */
+.edit-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 56px;
+  padding-inline: 12px;
+  background: #202124;
+  color: #fff;
+  flex: 0 0 auto;
+}
+
+.edit-header .edit-left,
+.edit-header .edit-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 0 0 auto;
+  white-space: nowrap;
+}
+
+/* פירורי־דרך במרכז */
+.edit-breadcrumb {
+  flex: 1 1 auto;
+  text-align: center;
+  font-size: 14px;
+  min-width: 0;
+}
+
+.edit-icon-btn {
+  width: 36px;
+  height: 36px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+  color: inherit;
+  background: transparent;
+  border: 0;
+  cursor: pointer;
+  transition: background-color 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.edit-icon-btn:hover {
+  background-color: rgba(255, 255, 255, 0.08);
+}
+
+.edit-icon-btn:active {
+  background-color: rgba(255, 255, 255, 0.16);
+}
+
+.edit-icon-btn.starred {
+  color: #fbbc04;
+}
+
+.edit-icon-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+/* ===== CONTENT ===== */
+
+/* אזור גלילה פנימי בלבד */
+.edit-content {
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding-inline: 24px;
+  overflow-y: auto;
+  overflow-x: hidden;
+  box-sizing: border-box;
+}
+
+/* כותרת: ללא טבעת/מסגרת גם בפוקוס */
+.task-edit-screen .task-title-edit { 
+  width: 100%; margin: 0; padding: 24px 0; text-align: center;
+  font: 400 24px/32px 'Assistant','Heebo','Roboto',sans-serif;
+  color: #202124; background: transparent; border: none; outline: none;
+  appearance: none; box-sizing: border-box; max-width: 100%;
+}
+.task-edit-screen .task-title-edit:focus,
+.task-edit-screen .task-title-edit:focus-visible { outline: none; box-shadow: none; }
+
+.task-title-edit::placeholder {
+  color: #9aa0a6;
+}
+
+/* פעולות */
+.action-list { display: grid; gap: 8px; }
+.action-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between; /* RTL: טקסט מימין, אייקון משמאל */
+  min-height: 48px;
+  padding: 12px 8px;
+  background: transparent;
+  border: 0;
+  cursor: pointer;
+  font-family: 'Assistant', 'Heebo', 'Roboto', sans-serif;
+  transition: background-color 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.action-row:hover {
+  background-color: rgba(60, 64, 67, 0.08);
+}
+
+.action-row:active {
+  background-color: rgba(60, 64, 67, 0.12);
+}
+
+.action-row .action-text {
+  font-size: 16px;
+  color: #202124;
+}
+
+.action-row .action-icon {
+  width: 24px;
+  height: 24px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* ===== BOTTOM ACTION ===== */
+
+/* כפתור תחתון */
+.complete-button {
+  display: block;
+  margin: 24px auto 32px auto;
+  background: #1A73E8;
+  color: #fff;
+  border: 0;
+  border-radius: 20px;
+  padding: 12px 24px;
+  font-size: 14px;
+  font-weight: 500;
+  font-family: 'Assistant', 'Heebo', 'Roboto', sans-serif;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 2px 8px rgba(26, 115, 232, 0.3);
+}
+
+.complete-button:hover {
+  background: #1967d2;
+  box-shadow: 0 4px 12px rgba(26, 115, 232, 0.4);
+  transform: translateY(-1px);
+}
+
+.complete-button:active {
+  background: #185abc;
+  transform: translateY(0);
+  box-shadow: 0 2px 8px rgba(26, 115, 232, 0.3);
+}
+
+/* ===== CONFIRM DIALOG ===== */
+
+.edit-confirm-dialog {
+  position: absolute; /* container-bound */
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background-color: #ffffff;
+  border-radius: 12px;
+  padding: 24px;
+  width: 90%;
+  max-width: 400px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.32);
+  text-align: center;
+  font-family: 'Assistant', 'Heebo', 'Roboto', sans-serif;
+  z-index: 1200;
+}
+
+.edit-confirm-dialog h3 {
+  margin: 0 0 12px 0;
+  font-size: 18px;
+  font-weight: 500;
+  color: #202124;
+}
+
+.edit-confirm-dialog p {
+  margin: 0 0 24px 0;
+  font-size: 14px;
+  color: #5f6368;
+  line-height: 1.4;
+}
+
+.confirm-actions {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+}
+
+.confirm-cancel,
+.confirm-close {
+  padding: 8px 16px;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  border: none;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.confirm-cancel {
+  background: transparent;
+  color: #1a73e8;
+}
+
+.confirm-cancel:hover {
+  background-color: rgba(26, 115, 232, 0.08);
+}
+
+.confirm-close {
+  background: #ea4335;
+  color: #ffffff;
+}
+
+.confirm-close:hover {
+  background: #d33b2c;
+}
+
+/* ===== ACCESSIBILITY ===== */
+
+/* נגישות: outline רק לכפתורים */
+.task-edit-screen .edit-icon-btn:focus-visible,
+.task-edit-screen .action-row:focus-visible,
+.task-edit-screen .complete-button:focus-visible {
+  outline: 2px solid #1A73E8; outline-offset: 2px; border-radius: 8px;
+}
+
+/* ===== DARK MODE SUPPORT ===== */
+
+@media (prefers-color-scheme: dark) {
+  .task-edit-screen {
+    background-color: #303134;
+  }
+
+  .edit-content {
+    color: #e8eaed;
+  }
+
+  .task-title-edit {
+    color: #e8eaed;
+  }
+
+  .task-title-edit::placeholder {
+    color: #9aa0a6;
+  }
+
+  .action-button {
+    color: #e8eaed;
+  }
+
+  .action-button:hover {
+    background-color: rgba(232, 234, 237, 0.08);
+  }
+
+  .edit-confirm-dialog {
+    background-color: #303134;
+  }
+
+  .edit-confirm-dialog h3 {
+    color: #e8eaed;
+  }
+
+  .edit-confirm-dialog p {
+    color: #9aa0a6;
+  }
+}
+
+/* ===== REDUCED MOTION ===== */
+
+@media (prefers-reduced-motion: reduce) {
+  .edit-screen-overlay,
+  .task-edit-screen,
+  .complete-button,
+  .edit-back-button,
+  .edit-star-button,
+  .edit-save-button,
+  .action-button {
+    animation: none;
+    transition: none;
+  }
+}
+
+/* ===== HIGH CONTRAST ===== */
+
+@media (prefers-contrast: high) {
+  .edit-header {
+    border-bottom: 1px solid #ffffff;
+  }
+
+  .action-button {
+    border: 1px solid #5f6368;
+  }
+
+  .complete-button {
+    border: 2px solid #1a73e8;
+  }
+}

@@ -1,0 +1,157 @@
+/**
+ * ListHeader CSS - כותר רשימה עם כפתורי בקרה
+ * בהתאם לעיצוב המקורי של Google Tasks
+ */
+
+.list-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 20px;
+  background-color: white;
+  border-bottom: 1px solid #F1F3F4;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03);
+  min-height: 56px;
+}
+
+/* כותרת הרשימה */
+.list-header-title {
+  font-size: 20px;
+  font-weight: 500;
+  color: var(--google-text-primary, #202124);
+  margin: 0;
+  flex: 1;
+  text-align: right;
+  font-family: 'Assistant', 'Heebo', 'Roboto', sans-serif;
+  line-height: 1.2;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* כפתורי הבקרה */
+.list-header-controls {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+/* כפתורי איקון אחידים */
+.list-header-icon-button {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: transparent;
+  border: none;
+  cursor: pointer;
+  color: var(--google-text-secondary, #5F6368);
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+}
+
+.list-header-icon-button:hover {
+  background-color: rgba(95, 99, 104, 0.08);
+  color: var(--google-text-primary, #202124);
+  transform: scale(1.05);
+}
+
+.list-header-icon-button:active {
+  background-color: rgba(95, 99, 104, 0.12);
+  transform: scale(0.98);
+}
+
+/* Focus state לנגישות */
+.list-header-icon-button:focus-visible {
+  outline: 2px solid var(--google-blue, #1A73E8);
+  outline-offset: 2px;
+  background-color: rgba(26, 115, 232, 0.08);
+}
+
+/* RTL specific adjustments */
+[dir="rtl"] .list-header-title {
+  text-align: right;
+  font-family: 'Assistant', 'Heebo', 'Roboto', sans-serif;
+  letter-spacing: -0.01em;
+}
+
+/* Dark mode support */
+@media (prefers-color-scheme: dark) {
+  .list-header {
+    --google-surface: #202124;
+    --google-text-primary: #E8EAED;
+    --google-text-secondary: #9AA0A6;
+    --google-border-light: #5F6368;
+    background-color: var(--google-surface);
+    border-bottom-color: var(--google-border-light);
+  }
+}
+
+/* Mobile responsiveness */
+@media (max-width: 480px) {
+  .list-header {
+    padding: 12px 16px;
+    min-height: 48px;
+  }
+  
+  .list-header-title {
+    font-size: 18px;
+  }
+  
+  .list-header-icon-button {
+    width: 44px;
+    height: 44px;
+  }
+}
+
+/* High contrast mode */
+@media (prefers-contrast: high) {
+  .list-header {
+    border-bottom: 2px solid #000000;
+  }
+  
+  .list-header-icon-button {
+    border: 1px solid currentColor;
+  }
+  
+  .list-header-title {
+    color: #000000;
+  }
+}
+
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  .list-header-icon-button {
+    transition: none;
+    transform: none;
+  }
+  
+  .list-header-icon-button:hover,
+  .list-header-icon-button:active {
+    transform: none;
+  }
+}
+
+/* Print styles */
+@media print {
+  .list-header {
+    background: white;
+    border-bottom: 1px solid #000000;
+    box-shadow: none;
+  }
+  
+  .list-header-controls {
+    display: none; /* הסתר כפתורים בהדפסה */
+  }
+  
+  .list-header-title {
+    color: #000000;
+  }
+}

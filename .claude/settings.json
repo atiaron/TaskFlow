@@ -1,0 +1,19 @@
+{
+    "contextWindow":  8000,
+    "autoComplete":  true,
+    "codeReview":  true,
+    "languageSupport":  [
+                            "javascript",
+                            "typescript",
+                            "python",
+                            "html",
+                            "css",
+                            "json"
+                        ],
+    "model":  "claude-3-7-sonnet-20250219", 
+    "temperature":  0.1,
+    "maxTokens":  8192,
+    "permissions": {
+        "defaultMode": "acceptEdits"
+    }
+}

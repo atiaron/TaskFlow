@@ -1,0 +1,434 @@
+@layer gt-tokens {
+/* === TaskFlow Theme / Google Tasks Mobile – Base === */
+:root{
+  /* Colors */
+  --color-primary: #1A73E8;       /* קו טאב פעיל */
+  --color-text: #202124;          /* טקסט ראשי */
+  --color-muted: #5F6368;         /* טקסט משני */
+  --color-surface: #F8F9FA;       /* רקע כרטיס */
+  --color-bg: #FFFFFF;            /* רקע עמוד */
+  --color-fab: #6E6E73;           /* FAB אפור-חם (כמו בגוגל) */
+  --color-accent-star: #E8AD00;   /* כוכב פעיל (זהב) */
+  --color-complete: #1E8E3E;      /* ירוק השלמה */
+  --color-row-hover: rgba(0,0,0,.03);
+  --color-press: rgba(0,0,0,.06);
+  --color-check-bg: #E8F0FE;      /* רקע עיגול מסומן */
+
+  /* Elevation / radius / spacing */
+  --shadow-elev: 0 6px 18px rgba(0,0,0,.12);
+  --radius-card: 20px;
+  --radius-fab: 16px;
+  --h-topbar: 56px;
+  --h-tab-indicator: 3px;
+  --space-16: 16px;
+  --space-24: 24px;
+  --space-32: 32px;
+
+  /* Type scale */
+  --font-title: 20px/1.3 "Roboto","Noto Sans Hebrew",system-ui,Arial; /* legacy long title token */
+  --font-body: 16px/1.5 "Roboto","Noto Sans Hebrew",system-ui,Arial;
+  --font-caption: 14px/1.45 "Roboto","Noto Sans Hebrew",system-ui,Arial;
+
+  /* === Unified Task Title / Subtitle Tokens (Single Source) === */
+  --font-title-size: 16px;
+  --font-title-line: 22px;
+  --font-title-weight: 600;
+  --font-subtitle-size: 13px;
+  --font-subtitle-line: 18px;
+  --font-subtitle-weight: 400;
+  --color-text-primary: #202124;
+  --color-text-secondary: #5f6368;
+
+  /* === Row & Controls Layout Tokens (Single Source) === */
+  --row-min-h: 56px;
+  --row-pad-x: 12px;
+  --row-pad-y: 8px;
+  --row-gap: 10px;
+  --ctrl-size: 44px;          /* Minimum accessible tap target */
+  --ctrl-radius: 10px;
+  --row-border: #ECEFF1;
+  --row-bg: #FFFFFF;
+  --row-bg-hover: #F6F7F9;
+  --star-on: #F4B400;
+  --check-on: #1A73E8;
+  --check-on-bg: #E8F0FE;
+  /* Completed & Control State Tokens */
+  --completed-bg: rgba(153,160,166,0.10);
+  --completed-text: #80868b;
+  --completed-subtext: #9aa0a6;
+  --completed-border: rgba(153,160,166,0.18);
+  --check-on-color: #1A73E8; /* mirror of primary for clarity */
+  --check-on-ring: rgba(26,115,232,0.35);
+  --check-on-border: rgba(26,115,232,0.28);
+  --star-on-completed: rgba(244,180,0,0.70);
+  --motion-fast: 140ms;
+
+  /* === Interactive Balance Tokens (Primary ✓ vs Secondary ★) === */
+  --interactive-primary:   #1A73E8;          /* Check (action) */
+  --interactive-secondary: #F4B400;          /* Star (status) */
+  --star-on-alpha:         0.82;             /* Subdued yellow alpha */
+  --star-off:              #9aa0a6;          /* Neutral off state */
+  --star-hover-bg:         #f1f3f4;          /* Mild hover bg for star */
+  --icon-size-primary:     36px;             /* Check size */
+  --icon-size-secondary:   32px;             /* Star smaller */
+
+  /* === Vertical Rhythm Tokens (Title / Subtitle) === */
+  --title-size:        15px;
+  --title-line:        22px;
+  --title-weight:      600;
+  --sub-size:          13px;
+  --sub-line:          18px;
+  --sub-color:         #5F6368;
+  --sub-gap-compact:   4px;
+  --sub-gap-default:   6px;
+  --sub-gap-comfy:     8px;
+  --density:           comfy; /* compact | default | comfy */
+
+  /* === 8pt System Base Spacing & Semantic Row Tokens (New) === */
+  --space-0: 0px;
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+
+  /* Control / Icon Sizes (density aware via overrides) */
+  --control-dense:   32px;
+  --control-compact: 36px;
+  --control-cozy:    40px;
+  --icon-size:       var(--control-cozy);
+
+  /* Row paddings & gaps (semantic) */
+  --row-pad-inline: var(--space-3); /* 12px */
+  --row-pad-block:  var(--space-2); /* 8px */
+  --row-gap-inline: var(--space-3); /* 12px */
+  --title-sub-gap:  var(--space-1); /* 4px */
+
+  /* Refined typography (semantic) */
+  --font-size-title:   15px;
+  --line-height-title: 20px;
+  --weight-title:      600;
+  --font-size-sub:     13px;
+  --line-height-sub:   18px;
+  --weight-sub:        400;
+  --color-text-muted:  var(--sub-color, #5F6368);
+
+  --radius-row: 12px;
+  /* === Row Ring / Hover Stabilization Tokens === */
+  --row-bg-default: var(--row-bg, #FFFFFF);
+  --row-bg-completed: var(--completed-bg, rgba(153,160,166,0.10));
+  --row-outline: rgba(32,33,36,0.08);
+  --row-outline-hover: rgba(32,33,36,0.14);
+  --row-hover-ring: rgba(26,115,232,0.10);
+  --control-hover-bg: rgba(32,33,36,0.06);
+  --dur-bg: .12s;
+  --dur-shadow: .15s;
+  --ease: ease;
+  /* Completed demotion tokens */
+  --completed-focus-ring: rgba(32,33,36,0.12);
+  --completed-dim-opacity: .92;
+  /* === Title Modifier Tokens (BEM-Lite modifiers) === */
+  --title-primary-color: var(--color-text, #202124);
+  --title-primary-weight: 600;
+  --title-secondary-color: var(--color-text, #202124);
+  --title-secondary-weight: 500;
+  --title-muted-color: var(--color-text-muted, #5F6368);
+  --title-muted-weight: 500;
+  --title-danger-color: #d93025; /* Google red 600-ish */
+  --title-danger-weight: 600;
+  --title-link-color: #1a73e8; /* Google blue */
+  --title-link-weight: 600;
+  --title-link-underline: underline;
+
+  /* Badge palette (meta) */
+  --badge-radius: 8px;
+  --badge-pad-inline: 8px;
+  --badge-pad-block: 2px;
+  --badge-reminder-fg: #0b57d0;
+  --badge-reminder-bg: rgba(11,87,208,0.10);
+  --badge-completed-fg: #137333;
+  --badge-completed-bg: rgba(19,115,51,0.10);
+  --badge-description-fg: var(--color-text-muted);
+  --badge-description-bg: rgba(95,99,104,0.10);
+  --badge-icon-size: 1em;
+  --badge-icon-shift: -0.1em;
+  --badge-gap: 6px;
+
+  /* === Meta Cluster & Chip Tokens === */
+  --meta-gap: 6px;
+  --meta-chip-gap: 8px;
+  --meta-dot-opacity: .65;
+  --chip-radius: 8px;
+  --chip-pad-inline: 6px;
+  --chip-pad-block: 1px;
+  --chip-datetime-fg: var(--color-text-muted);
+  --chip-datetime-bg: rgba(95,99,104,0.08);
+  --chip-relative-fg: #0b57d0;
+  --chip-relative-bg: rgba(11,87,208,0.10);
+
+  /* === Meta Variants (fg/bg) === */
+  --v-success-fg: #137333;         --v-success-bg: rgba(19,115,51,.10);
+  --v-warning-fg: #b06f00;         --v-warning-bg: rgba(176,111,0,.12);
+  --v-danger-fg:  #d93025;         --v-danger-bg:  rgba(217,48,37,.12);
+  --v-info-fg:    #0b57d0;         --v-info-bg:    rgba(11,87,208,.10);
+  --v-muted-fg:   var(--color-text-muted);  --v-muted-bg: rgba(95,99,104,.10);
+  --v-neutral-fg: var(--color-text-muted);  --v-neutral-bg: transparent;
+
+  /* === Rail Layout (urgency removed) === */
+  --rail-col: var(--icon-size);  /* width of status rail column */
+  --trail-col: calc(var(--icon-size) + 4px); /* trailing controls */
+  --row-grid-gap: var(--row-gap-inline, 12px);
+  --rail-gap: 6px;
+
+  /* === Priority Palette (maps to variants) === */
+  --pri-p1-fg: var(--v-danger-fg);
+  --pri-p1-bg: var(--v-danger-bg);
+  --pri-p2-fg: var(--v-warning-fg);
+  --pri-p2-bg: var(--v-warning-bg);
+  --pri-p3-fg: var(--v-neutral-fg);
+  --pri-p3-bg: var(--v-neutral-bg);
+
+  /* === Expandable Meta Clamp Tokens === */
+  --meta-lines-collapsed: 2;
+  --meta-lines-expanded: 4;
+  --meta-anim-dur: .18s;
+  --meta-anim-ease: ease;
+  --expander-size: 32px;
+  --expander-radius: 8px;
+  --expander-hover-bg: rgba(32,33,36,.06);
+
+  /* === Text Area Focus/Hover Tokens === */
+  --textArea-radius: 10px;
+  --textArea-pad-inline: 6px;
+  --textArea-pad-block: 2px;
+  --textArea-hover-bg: rgba(32,33,36,.04); /* ultra subtle gray */
+  --textArea-focus-bg: rgba(26,115,232,.08); /* soft blue tint */
+  --textArea-transition: .12s ease;
+
+  /* === Completed State (Smart) Tokens === */
+  --completed-title-color: var(--color-text-muted, #5f6368);
+  --completed-meta-color: color-mix(in oklab, var(--color-text-muted) 92%, transparent);
+  --completed-decoration: line-through;
+  --completed-title-weight: 500;
+  --completed-check-fg: #137333;
+  --completed-check-bg: color-mix(in oklab, #137333 16%, #ffffff);
+  --completed-check-ring: color-mix(in oklab, #137333 12%, transparent);
+  --completed-star-muted: color-mix(in oklab, var(--color-text-muted) 75%, transparent);
+  /* === Animation Tokens (Check / Pulse / Star) === */
+  --anim-check-dur: .32s;
+  --anim-pulse-dur: .5s;
+  --anim-star-dur:  .22s;
+  --anim-spark-dur: .35s;
+  --ease-out-snap: cubic-bezier(.2,.8,.2,1);
+  --pulse-color: color-mix(in oklab, var(--check-on-color, #1A73E8) 18%, transparent);
+  --spark-color: color-mix(in oklab, var(--star-on, #F4B400) 28%, transparent);
+  --spark-rays: 8;
+  --check-len: 22; /* Fallback path length for 16x16 check path */
+  /* === Focus Halo Tokens (Unified) === */
+  --focus-row-ring-color: rgba(26,115,232,.35);
+  --focus-row-ring-width: 3px;
+  --focus-sub-outline-color: rgba(26,115,232,.90);
+  --focus-sub-outline-width: 2px;
+  --focus-sub-outline-offset: 2px;
+  --focus-dur: .12s; --focus-ease: ease;
+  --focus-row-ring-color-completed: rgba(95,99,104,.28);
+
+
+  /* === Tooltip Tokens === */
+  --tooltip-bg: rgba(32,33,36,.92);
+  --tooltip-fg: #FFFFFF;
+  --tooltip-pad: 6px 8px;
+  --tooltip-radius: 8px;
+  --tooltip-fs: 12px;
+  --tooltip-gap: 8px; /* distance from trigger */
+
+  /* === Modernization: Global Animation & Transition Tokens (2025) === */
+  --gt-transition-fast: 140ms;
+  --gt-transition-medium: 240ms;
+  --gt-transition-slow: 400ms;
+  --gt-ease-standard: cubic-bezier(.4,0,.2,1);
+  --gt-ease-emphasized: cubic-bezier(.3,0,0,1);
+  --gt-ease-bounce: cubic-bezier(.68,-0.55,.27,1.55);
+
+  /* === Modernization: Shadow Elevation (multi-layer semantic) === */
+  --gt-shadow-level-1: 0 1px 2px rgba(0,0,0,.12), 0 0 0 1px rgba(0,0,0,.04);
+  --gt-shadow-level-2: 0 2px 4px -1px rgba(0,0,0,.14), 0 4px 8px rgba(0,0,0,.10);
+  --gt-shadow-level-3: 0 4px 12px -2px rgba(0,0,0,.16), 0 8px 16px rgba(0,0,0,.10);
+  --gt-shadow-floating: 0 8px 24px -4px rgba(0,0,0,.20), 0 12px 32px rgba(0,0,0,.12);
+
+  /* === Modernization: Gradient Tokens (can map to existing palette) === */
+  --gt-gradient-primary: linear-gradient(135deg, var(--color-primary) 0%, color-mix(in oklab, var(--color-primary) 85%, #000) 100%);
+  --gt-gradient-surface: linear-gradient(180deg, var(--color-bg) 0%, var(--row-bg-hover) 100%);
+
+  /* === DateTime Picker Tokens === */
+  --dt-height: 220px;              /* visible wheel height */
+  --dt-column-width: 96px;         /* width per wheel column */
+  --dt-gap: 8px;                   /* gap between wheels */
+  --dt-wheel-font: 16px/1.4 "Roboto","Noto Sans Hebrew",system-ui,Arial;
+  --dt-wheel-active-size: 18px;
+  --dt-wheel-color: var(--color-text);
+  --dt-wheel-muted: var(--color-text-muted);
+  --dt-wheel-selected-bg: var(--check-on-bg);
+  --dt-wheel-selected-ring: var(--check-on-ring);
+  --dt-wheel-radius: 14px;
+  --dt-outline: 1px solid rgba(0,0,0,.08);
+  --dt-divider-color: rgba(0,0,0,.08);
+  --dt-focus-ring: 0 0 0 3px rgba(26,115,232,.35);
+  --dt-scroll-snap: mandatory;
+  --dt-touch-target: 44px;
+  --dt-wheel-transition: var(--gt-transition-medium) var(--gt-ease-standard);
+  --dt-anim-emphasized: var(--gt-transition-fast) var(--gt-ease-emphasized);
+  --dt-header-fg: var(--color-text);
+  --dt-header-bg: var(--color-surface);
+  --dt-header-pad: 8px 12px;
+  --dt-footer-bg: var(--color-surface);
+  --dt-footer-pad: 8px 12px 12px;
+  --dt-accent: var(--color-primary);
+  --dt-danger: #d93025;
+  --dt-success: #137333;
+  --dt-slot-opacity: .42;          /* unselected */
+  --dt-slot-scale: .92;
+  --dt-slot-active-scale: 1.04;
+  --dt-backdrop: rgba(32,33,36,.42);
+  --dt-elev: var(--gt-shadow-level-3);
+  --dt-bg: var(--color-bg);
+  --dt-backdrop-filter: blur(8px) saturate(140%);
+  --dt-wheel-mask: linear-gradient(var(--color-bg),rgba(255,255,255,0) 12%,rgba(255,255,255,0) 88%,var(--color-bg));
+
+  /* === TaskRow Modernization Tokens (2025) === */
+  --task-row-height: 64px; /* גובה ברירת מחדל מורחב קלות */
+  --task-row-radius: 16px;
+  --task-row-pad-inline: 12px;
+  --task-row-pad-block: 6px;
+  --task-row-gap: 10px;
+  --task-row-elevation: var(--gt-shadow-level-1);
+  --task-row-elevation-hover: var(--gt-shadow-level-2);
+  --task-row-elevation-active: var(--gt-shadow-level-3);
+  --task-row-bg: var(--row-bg-default);
+  --task-row-bg-hover: var(--row-bg-hover);
+  --task-row-bg-active: color-mix(in oklab, var(--color-primary) 8%, var(--task-row-bg));
+  --task-row-border: 1px solid rgba(32,33,36,0.08);
+  --task-row-border-active: 1px solid rgba(26,115,232,0.40);
+  --task-row-transition: var(--gt-transition-medium) var(--gt-ease-standard);
+  --task-row-swipe-distance: 120px;
+  --task-row-swipe-bg-complete: linear-gradient(90deg, var(--check-on-color), var(--completed-check-fg));
+  --task-row-swipe-bg-star: linear-gradient(90deg, var(--star-on), #ffdd55);
+  --task-row-swipe-bg-delete: linear-gradient(90deg, #d93025, #b31412);
+  --task-row-swipe-fg: #fff;
+  --task-row-badge-gap: 6px;
+  --task-row-badge-radius: 8px;
+  --task-row-badge-fs: 11px;
+  --task-row-badge-pad: 2px 6px;
+  --task-expand-duration: var(--gt-transition-medium);
+  --task-expand-ease: var(--gt-ease-emphasized);
+  --task-meta-line-clamp: 2;
+  --task-meta-line-clamp-expanded: 6;
+  --badge-scale-hover: 1.05;
+  --task-row-focus-ring: 0 0 0 3px rgba(26,115,232,.35);
+  --task-row-completed-opacity: .78;
+  --task-row-critical-accent: #d93025;
+  --task-row-priority-p1: var(--v-danger-fg);
+  --task-row-priority-p2: var(--v-warning-fg);
+  --task-row-priority-p3: var(--v-muted-fg);
+  --task-row-handle-width: 46px; /* leading control cluster */
+  --task-row-trailing-width: 54px; /* trailing actions */
+  --task-row-anim-bounce: var(--gt-ease-bounce);
+  --task-row-backdrop-selected: linear-gradient(90deg, rgba(26,115,232,.08), transparent);
+}
+/* Close initial @layer gt-tokens block */
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --anim-check-dur: 0s;
+    --anim-pulse-dur: 0s;
+    --anim-star-dur:  0s;
+    --anim-spark-dur: 0s;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root { --textArea-transition: 0s; }
+}
+
+/* Density variants (scoped; add class to a wrapping container like body or .google-tasks-wrapper) */
+@layer gt-tokens {
+  .density-compact {
+    --icon-size:       var(--control-compact);
+    --row-pad-inline:  var(--space-2); /* 8px */
+  --row-gap-inline:  var(--space-2);
+  }
+  .density-dense {
+    --icon-size:       var(--control-dense);
+    --row-pad-inline:  var(--space-1); /* 4px */
+    --row-gap-inline:  var(--space-1);
+  }
+}
+
+/* גוף ועברית/RTL כברירת מחדל */
+html, body {
+  background: var(--color-bg);
+  color: var(--color-text);
+  font: var(--font-body);
+  margin: 0;
+  padding: 0;
+}
+
+/* ה-wrapper הוא מקור האמת לכל המיקום – אין fixed כלל */
+.google-tasks-wrapper{
+  position: relative;
+  width: 100%;
+  max-width: 375px;         /* מוקאפ מובייל טיפוסי */
+  min-height: 100dvh;
+  margin-inline: auto;
+  background: var(--color-bg);
+  direction: rtl;
+}
+
+/* --- Header Tabs (שלב 2 יחבר קומפוננטה) --- */
+.gt-header{ height: var(--h-topbar); display:flex; align-items:center; gap: var(--space-16); padding-inline: var(--space-16); }
+.gt-tabs-wrapper { padding: 8px 16px 0; position:relative; }
+.gt-tabs{ position:relative; display:flex; align-items:center; gap:20px; width:100%; justify-content:flex-start; }
+.gt-tab{ position:relative; background:none; border:0; padding:6px 4px 10px; font-weight:500; font-size:15px; color:var(--color-muted); cursor:pointer; white-space:nowrap; }
+.gt-tab.grow{ flex:1 1 0; text-align:center; }
+.gt-tab.star{ font-size:18px; line-height:1; }
+.gt-tab.is-active{ color:var(--color-text); }
+/* Visual separator before the "new" tab */
+.gt-tab.new{ color:var(--color-primary); font-weight:600; }
+/* Vertical divider between list and new (appears before .new) */
+.gt-tab.new:before { content:""; position:absolute; inset-inline-start:-10px; top:25%; width:1px; height:50%; background:rgba(0,0,0,.12); }
+/* Removed static underline for .gt-tab.new to rely solely on moving indicator when active */
+.gt-tab:focus-visible{ outline:2px solid var(--color-primary); outline-offset:2px; border-radius:4px; }
+
+/* Indicator bar (underline) */
+.gt-tab-indicator-bar { position:absolute; height:3px; background:var(--color-primary); bottom:0; right:0; width:0; border-radius:2px; transform:translateX(0); transition: transform .28s cubic-bezier(.4,0,.2,1), width .28s; }
+
+/* --- Empty Card --- */
+.gt-empty{ padding: var(--space-24); }
+.gt-card{
+  background: var(--color-surface);
+  border-radius: var(--radius-card);
+  padding: var(--space-24);
+  box-sizing: border-box;
+}
+.gt-card-actions{ display:flex; gap:12px; opacity:.7; }
+.gt-icon-btn{ background:none; border:0; font-size:18px; line-height:1; padding:6px; cursor:pointer; }
+.gt-card-title{ font: var(--font-title); margin: 12px 0 8px; }
+.gt-illustration{ height: 160px; background: linear-gradient(180deg,#EAF2FF,transparent); border-radius: 12px; margin: 8px 0 16px; }
+.gt-empty-title{ font-size:16px; font-weight:500; margin:8px 0; }
+.gt-empty-desc{ font: var(--font-caption); color: var(--color-muted); margin: 0; white-space:pre-line; }
+
+/* --- FAB (ריבוע מעוגל, container-bound) --- */
+.gt-fab{
+  position: absolute; inset: auto auto 24px 24px; /* RTL: למטה-שמאל */
+  width:56px; height:56px; border-radius: var(--radius-fab);
+  background: var(--color-fab); color:#fff; font-size:24px;
+  border:0; box-shadow: var(--shadow-elev); cursor:pointer;
+  display:grid; place-items:center;
+}
+
+/* הבטחת container-bound לכל overlay */
+.sheet-overlay, .bottom-sheet, .task-edit-screen{
+  position:absolute; inset:0; /* בלי fixed */
+}

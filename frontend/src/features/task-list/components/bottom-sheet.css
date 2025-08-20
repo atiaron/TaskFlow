@@ -1,0 +1,153 @@
+/**
+ * Bottom Sheet Styles - Container-Bound Modal
+ * לא viewport fixed, רק בתוך wrapper
+ */
+
+/* נעילת גלילה כשהSheet פתוח */
+.google-tasks-wrapper.is-modal-open {
+  overflow: hidden;
+}
+
+/* Overlay - מכסה את כל ה-wrapper */
+.sheet-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.35);
+  z-index: 100;
+}
+
+/* Bottom Sheet - עולה מתחתית ה-wrapper */
+.bottom-sheet {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  max-height: 60%;
+  background: #202124;
+  color: #fff;
+  border-top-left-radius: 16px;
+  border-top-right-radius: 16px;
+  padding: 12px 16px;
+  transform: translateY(100%);
+  transition: transform 0.25s ease;
+  z-index: 101;
+}
+
+.bottom-sheet.open {
+  transform: translateY(0);
+}
+
+/* Sheet Header */
+.sheet-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 16px 8px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  margin-bottom: 8px;
+}
+
+.sheet-title {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 500;
+  color: #fff;
+}
+
+.sheet-close-button {
+  background: transparent;
+  border: none;
+  padding: 8px;
+  cursor: pointer;
+  border-radius: 50%;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #9aa0a6;
+  font-size: 16px;
+  line-height: 1;
+  transition: all 0.2s ease;
+}
+
+.sheet-close-button:hover {
+  background: rgba(255, 255, 255, 0.08);
+  color: #fff;
+}
+
+.sheet-close-button:focus-visible {
+  outline: 2px solid #8ab4f8;
+  outline-offset: 2px;
+}
+
+/* Sheet Content */
+.sheet-content {
+  padding: 0 4px;
+}
+
+/* כפתורים בתפריט */
+.sheet-primary {
+  width: 100%;
+  min-height: 48px;
+  font-weight: 500;
+  padding: 12px 8px;
+  text-align: center;
+  background: transparent;
+  border: none;
+  color: #fff;
+  cursor: pointer;
+  font-size: 16px;
+  border-radius: 8px;
+  margin-bottom: 4px;
+}
+
+.sheet-primary:hover {
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.sheet-secondary {
+  width: 100%;
+  min-height: 48px;
+  padding: 12px 8px;
+  text-align: center;
+  background: transparent;
+  border: none;
+  color: #fff;
+  cursor: pointer;
+  font-size: 14px;
+  border-radius: 8px;
+  margin-bottom: 4px;
+}
+
+.sheet-secondary:hover {
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.sheet-note {
+  margin: 8px 0 12px;
+  color: #9aa0a6;
+  font-size: 14px;
+  text-align: center;
+  padding: 0 8px;
+}
+
+/* RTL Support */
+[dir="rtl"] .sheet-primary,
+[dir="rtl"] .sheet-secondary {
+  font-family: 'Assistant', 'Heebo', 'Roboto', sans-serif;
+}
+
+/* Accessibility */
+.sheet-primary:focus-visible,
+.sheet-secondary:focus-visible {
+  outline: 2px solid #8ab4f8;
+  outline-offset: 2px;
+}
+
+/* Animation עבור browsers שלא תומכים ב-transition */
+@media (prefers-reduced-motion: reduce) {
+  .bottom-sheet {
+    transition: none;
+  }
+}

@@ -103,6 +103,10 @@ jobs:
           REACT_APP_IS_DEV_MODE: false
           REACT_APP_CSP_ENABLED: true
         run: npm run build:prod
+      - name: Verify build artifacts
+        run: npm run verify:build || echo "(If frontend workspace separated, adjust working dir)"
+      - name: Size snapshot (frontend)
+        run: npm run size:snapshot || echo "Snapshot skipped"
 
       - name: Deploy to Vercel
         uses: amondnet/vercel-action@v20

@@ -1,0 +1,18 @@
+{
+  "app.title": "TaskFlow",
+  "actions.add": "Add",
+  "actions.addTask": "Add task",
+  "actions.close": "Close",
+  "actions.undo": "Undo",
+  "views.starred": "Starred",
+  "views.completed": "Completed",
+  "completed.section": "Completed ({count})",
+  "toast.starred": "Starred — moved to top",
+  "toast.cleared": "Cleared {count} tasks",
+  "dialog.createTask.title": "Create task",
+  "labels.reminder": "Reminder",
+  "labels.completed": "Completed",
+  "aria.addTask": "Add task",
+  "aria.closeDialog": "Close dialog",
+  "placeholder.addDescription": "Add description…"
+}

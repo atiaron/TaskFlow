@@ -1,0 +1,47 @@
+{
+  "permissions": {
+    "allow": [
+      "mcp__playwright__browser_install",
+      "mcp__playwright__browser_navigate",
+      "mcp__playwright__browser_take_screenshot",
+      "mcp__playwright__browser_console_messages",
+      "mcp__playwright__browser_snapshot",
+      "mcp__playwright__browser_network_requests",
+      "mcp__playwright__browser_resize",
+      "mcp__playwright__browser_hover",
+      "mcp__playwright__browser_click",
+      "mcp__playwright__browser_type",
+      "mcp__playwright__browser_press_key",
+      "mcp__playwright__browser_evaluate",
+      "Bash(mkdir:*)",
+      "Bash(dir)",
+      "Bash(npm run dev:*)",
+      "Bash(npm run start:*)",
+      "Bash(npm run test:*)",
+      "Bash(npm run build:*)",
+      "Bash(rm:*)",
+      "Bash(cp:*)",
+      "Bash(set PORT=3002)",
+      "Bash(npx:*)",
+      "mcp__playwright__browser_close",
+      "Bash(npm install:*)",
+      "Bash(cross-env:*)",
+      "Bash(npm run:*)",
+      "Bash(npm start)",
+      "Bash(cat:*)",
+      "Bash(dir /b /s C:UsersmoshiachDesktopTaskFlow*.md)",
+      "Bash(dir C:UsersmoshiachDesktopTaskFlow)",
+      "Bash(dir C:UsersmoshiachDesktopTaskFlowfrontendsrc)",
+      "Bash(dir:*)",
+      "Bash(npm ci:*)",
+      "Bash(npm cache clean:*)",
+      "Bash(set PORT=3001)",
+      "Bash(grep:*)",
+      "Bash(mcp__playwright__browser_install:*)",
+      "Bash(start-frontend-dev.bat)"
+    ],
+    "additionalDirectories": [
+      "C:\\c\\Users\\moshiach\\Desktop\\TaskFlow"
+    ]
+  }
+}
