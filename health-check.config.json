@@ -1,0 +1,100 @@
+{
+  "healthCheck": {
+    "thresholds": {
+      "bundleSize": {
+        "max": 2097152,
+        "warn": 1572864,
+        "unit": "bytes"
+      },
+      "jsSize": {
+        "max": 1048576,
+        "warn": 786432,
+        "unit": "bytes"
+      },
+      "securityScore": {
+        "min": 80,
+        "warn": 90
+      },
+      "performanceScore": {
+        "min": 75,
+        "warn": 85
+      }
+    },
+    "skipTests": [],
+    "ci": {
+      "failOnErrors": true,
+      "failOnWarnings": false,
+      "outputFormat": "json"
+    },
+    "reports": {
+      "html": {
+        "enabled": true,
+        "outputPath": "./health-report.html"
+      },
+      "json": {
+        "enabled": true,
+        "outputPath": "./health-report.json"
+      }
+    }
+  },
+  "firebase": {
+    "requiredFiles": [
+      "firebase.json",
+      "firestore.rules",
+      "firestore.indexes.json"
+    ],
+    "security": {
+      "checkInsecureRules": true,
+      "checkMissingIndexes": true,
+      "checkEnvironmentVars": true
+    }
+  },
+  "security": {
+    "secretPatterns": [
+      "(?:api[_-]?key|apikey)\\s*[:=]\\s*['\"`]([^'\"`\\s]{20,})['\"`]",
+      "(?:password|pwd|pass)\\s*[:=]\\s*['\"`]([^'\"`\\s]{8,})['\"`]",
+      "(?:token|access[_-]?token)\\s*[:=]\\s*['\"`]([^'\"`\\s]{20,})['\"`]",
+      "-----BEGIN\\s+(RSA\\s+)?PRIVATE\\s+KEY-----"
+    ],
+    "csp": {
+      "required": true,
+      "requiredDirectives": [
+        "default-src",
+        "script-src", 
+        "style-src",
+        "img-src",
+        "connect-src"
+      ],
+      "forbiddenValues": [
+        "unsafe-inline",
+        "unsafe-eval"
+      ]
+    },
+    "headers": {
+      "required": [
+        "X-Frame-Options",
+        "X-Content-Type-Options",
+        "Referrer-Policy",
+        "Strict-Transport-Security"
+      ]
+    }
+  },
+  "performance": {
+    "monitoring": {
+      "webVitals": true,
+      "lighthouse": true,
+      "analytics": false
+    },
+    "optimizations": {
+      "lazyLoading": true,
+      "codeSpitting": true,
+      "treeshaking": true,
+      "minification": true
+    },
+    "assets": {
+      "checkServiceWorker": true,
+      "checkPWAManifest": true,
+      "checkImageOptimization": true
+    }
+  }
+}
